@@ -34,9 +34,14 @@ nav {
     gap: 2rem;
     margin-right: -250px;
     margin-top: -60px;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+.nav-links:hover{
+    transform: scale(1.05) translateZ(-10px);
+    color: #007BFF;
 }
 
-.nav-links a {
+/* .nav-links a {
     text-decoration: none;
     color: #333;
     font-size: 1rem;
@@ -45,7 +50,7 @@ nav {
 
 .nav-links a:hover {
     color: #ff3333;
-}
+} */
 
 .hero {
     display: flex;
