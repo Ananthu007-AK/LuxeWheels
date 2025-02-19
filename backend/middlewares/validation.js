@@ -15,7 +15,6 @@ const loginvalidation=[
             return res.status(401).json({ errors: errors.array() });
         }
         next();
-        console.log('validation done');
         
     }
 ];
