@@ -13,15 +13,27 @@ function Register() {
 
     console.log("in form");
 
+    try {
+      const response = await axios.post('http://localhost:3000/user/register', {
+        username: username,
+        email: email,
+        password: password,
+      })
+      console.log(response.data);
 
-    const response = await axios.post('http://localhost:3000/user/register', {
-      username: username,
-      email: email,
-      password: password,
-    })
-    console.log(response.data);
-
-    alert(response.data.msg)
+      alert(response.data.msg)
+    }
+    catch (error) {
+      if (error.response && error.response.status === 401) {
+        console.log(error.response.data.errors[0].msg)
+        alert(error.response.data.errors[0].msg);
+      } else if (error.response) {
+        alert(`Error ${error.response.status}: ${error.response.statusText}`);
+      } else {
+        console.error(error);
+        alert('An unexpected error occurred');
+      }
+    }
   }
   return (
     <>

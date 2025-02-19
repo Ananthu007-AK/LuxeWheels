@@ -1,6 +1,8 @@
 const User=require("../model/user")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const{loginvalidation,registervalidation}=require("../middlewares/validation")
+
 
 const registerController=async(req,res)=>{
     const {username,email,password}=req.body
@@ -71,4 +73,4 @@ const loginController=async(req,res)=>{
 }
 
 
-module.exports={registerController,loginController  }
+module.exports={registerController,loginController ,registervalidation,loginvalidation} 

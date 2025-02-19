@@ -29,8 +29,17 @@ function Login() {
         alert(response.data.msg)
     }
     catch(error){
-        console.log(error);
-        alert('Failed to login')        
+        if (error.response && error.response.status === 401) {
+            console.log(error.response.data.errors[0].msg)
+            alert(error.response.data.errors[0].msg);
+        } else if (error.response) {
+            alert(`Error ${error.response.status}: ${error.response.statusText}`);
+        } else {
+            console.error(error);
+            alert('An unexpected error occurred');
+        }
+
+      
     }
 }
     return (
