@@ -4,7 +4,7 @@ const userController=require('../controllers/user')
 const{loginvalidation,registervalidation}=require("../middlewares/validation")
 
 
-router.post('/register',userController.registerController)
+router.post('/register',registervalidation,userController.registerController)
 
 router.post('/login',loginvalidation,userController.loginController)
 
