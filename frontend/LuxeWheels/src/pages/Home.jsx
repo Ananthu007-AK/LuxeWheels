@@ -3,6 +3,7 @@ import './Home.css'
 // import App from './App.jsx'
 import img1 from './car.png'
 import Login from './Login'
+import { Link } from 'react-router-dom'
 
 function Home() {
   return (
@@ -22,11 +23,11 @@ function Home() {
           Luxewheels
         </a>
         <div className="nav-links">
-          <a href="#">Buy</a>
-          <a href="#">Rent</a>
-          <a href="#">Sell</a>
-          <a href="#">About us</a>
-          <a href="./Login">Login</a>
+          <Link to='#'>Buy</Link>
+          <Link to='#'>Rent</Link>
+          <Link to='#'>Sell</Link>
+          <Link to='#'>About us</Link>
+          <Link to='/Login'>Login</Link>
         </div>
       </nav>
       <main>
