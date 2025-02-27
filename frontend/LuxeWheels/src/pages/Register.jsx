@@ -13,6 +13,13 @@ function Register() {
 
     console.log("in form");
 
+
+    if (username == '' || email == '' || password == '') {
+      alert("Username/Email/Password cant be empty")
+      return
+    }
+
+
     try {
       const response = await axios.post('http://localhost:3000/user/register', {
         username: username,
