@@ -8,8 +8,7 @@ import { Link } from 'react-router-dom'
 function Home() {
   return (
     <>
-      <meta charSet="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
       <title>Luxewheels - Where Elegance Meets The Road</title>
       <link rel="stylesheet" href="Home.css" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
