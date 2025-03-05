@@ -2,10 +2,12 @@ import React, { useState } from 'react'
 import './Login.css'
 import axios from 'axios'
 import Register from './Register'
+import { useNavigate } from 'react-router-dom'
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setpass] = useState('');
+    const navigate=useNavigate()
 
     async function sendData(e) {
         e.preventDefault()
@@ -25,6 +27,8 @@ function Login() {
 
 
         localStorage.setItem('token', response.data.token)
+
+        navigate('/')
 
         alert(response.data.msg)
     }
