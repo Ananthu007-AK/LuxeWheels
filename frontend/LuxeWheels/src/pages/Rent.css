@@ -1,0 +1,487 @@
+/* RentPage.css */
+.rental-page-container {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #333;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  
+  /* Hero Section */
+  .showcase-banner {
+    background-color: #f5f5f5;
+    padding: 80px 40px;
+    text-align: center;
+    position: relative;
+  }
+  
+  .showcase-heading {
+    font-size: 48px;
+    font-weight: 300;
+    margin-bottom: 20px;
+    color: #222;
+  }
+  
+  .showcase-subtext {
+    font-size: 18px;
+    margin-bottom: 40px;
+    color: #666;
+  }
+  
+  .search-wrapper {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 18px 25px;
+    border-radius: 50px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    outline: none;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .search-input:focus {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  
+  /* Car Listings */
+  .vehicle-catalog {
+    padding: 40px 20px 80px;
+  }
+  
+  .vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+  }
+  
+  .vehicle-tile {
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .vehicle-tile:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  }
+  
+  .vehicle-thumbnail {
+    height: 220px;
+    overflow: hidden;
+  }
+  
+  .vehicle-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .vehicle-tile:hover .vehicle-thumbnail img {
+    transform: scale(1.05);
+  }
+  
+  .vehicle-info-brief {
+    padding: 20px;
+  }
+  
+  .vehicle-title {
+    margin: 0 0 10px;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  
+  .vehicle-category {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  .vehicle-rate {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #222;
+  }
+  
+  .rate-period {
+    font-size: 14px;
+    font-weight: normal;
+    color: #888;
+  }
+  
+  .details-button {
+    background-color: transparent;
+    border: 2px solid #222;
+    color: #222;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .details-button:hover {
+    background-color: #222;
+    color: white;
+  }
+  
+  /* Car Detail Section */
+  .vehicle-details-wrapper {
+    padding: 40px 20px 80px;
+  }
+  
+  .navigation-back {
+    margin-bottom: 30px;
+  }
+  
+  .back-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .back-button:hover {
+    color: #222;
+  }
+  
+  .details-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+  }
+  
+  .vehicle-showcase {
+    border-radius: 12px;
+    overflow: hidden;
+    height: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .vehicle-showcase img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  
+  .vehicle-data-sheet h2 {
+    margin: 0 0 15px;
+    font-size: 36px;
+    font-weight: 500;
+  }
+  
+  .vehicle-class {
+    color: #888;
+    font-size: 16px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .rental-cost {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #222;
+  }
+  
+  .cost-interval {
+    font-size: 16px;
+    font-weight: normal;
+    color: #888;
+  }
+  
+  .vehicle-description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 30px;
+  }
+  
+  .technical-specs {
+    margin-bottom: 40px;
+  }
+  
+  .specs-heading {
+    font-size: 20px;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  
+  .specs-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .spec-row {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .spec-name {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 5px;
+  }
+  
+  .spec-data {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  /* Booking Form */
+  .reservation-form {
+    background-color: #f9f9f9;
+    padding: 30px;
+    border-radius: 12px;
+  }
+  
+  .form-title {
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  
+  .form-flex-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .form-flex-row--full {
+    grid-template-columns: 1fr;
+  }
+  
+  .input-block {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input-label {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .input-field {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+  
+  .input-field:focus {
+    outline: none;
+    border-color: #999;
+  }
+  
+  .submit-button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 6px;
+    background-color: #222;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+  }
+  
+  .submit-button:hover {
+    background-color: #000;
+  }
+  
+  /* Benefits Section */
+  .advantages-section {
+    padding: 80px 20px;
+    background-color: #f5f5f5;
+    text-align: center;
+  }
+  
+  .advantages-title {
+    font-size: 36px;
+    font-weight: 300;
+    margin-bottom: 50px;
+  }
+  
+  .advantages-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+  }
+  
+  .advantage-item {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+  
+  .advantage-icon {
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+  
+  .advantage-title {
+    margin: 0 0 15px;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  
+  .advantage-text {
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  /* Testimonials Section */
+  .reviews-section {
+    padding: 80px 20px;
+    text-align: center;
+  }
+  
+  .reviews-title {
+    font-size: 36px;
+    font-weight: 300;
+    margin-bottom: 50px;
+  }
+  
+  .reviews-collection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+  }
+  
+  .review-card {
+    background-color: #f9f9f9;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: left;
+  }
+  
+  .review-text {
+    color: #555;
+    line-height: 1.6;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .reviewer-name {
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 0;
+  }
+  
+  /* FAQ Section */
+  .faq-block {
+    padding: 80px 20px;
+    background-color: #f5f5f5;
+  }
+  
+  .faq-heading {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 300;
+    margin-bottom: 50px;
+  }
+  
+  .faq-list {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .faq-entry {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .faq-entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  
+  .faq-question {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #222;
+  }
+  
+  .faq-answer {
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .details-layout {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+    
+    .showcase-heading {
+      font-size: 40px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .vehicle-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    
+    .specs-table {
+      grid-template-columns: 1fr;
+    }
+    
+    .form-flex-row {
+      grid-template-columns: 1fr;
+    }
+    
+    .showcase-banner {
+      padding: 60px 20px;
+    }
+    
+    .showcase-heading {
+      font-size: 32px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .vehicle-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .advantages-display, 
+    .reviews-collection {
+      grid-template-columns: 1fr;
+    }
+    
+    .showcase-heading {
+      font-size: 28px;
+    }
+    
+    .vehicle-data-sheet h2 {
+      font-size: 28px;
+    }
+  }

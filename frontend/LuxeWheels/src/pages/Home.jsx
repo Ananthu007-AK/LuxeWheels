@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Home.css";
 import Navbar from "../components/Navbar"; // Import Navbar component
 import img1 from "./car.png";
@@ -7,7 +7,32 @@ import img3 from "./car3.png";
 import img4 from "./car4.png";
 import img5 from "./car5.png";
 
+const CollectionCard = ({ image, title, price }) => {
+  return (
+    <div className="collection-card">
+      <img src={image} alt={title} />
+      <h3>{title}</h3>
+      <p>{price}</p>
+      <button className="collection-btn">View Details</button>
+    </div>
+  );
+};
+
 function Home() {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const collectionItems = [
+    { image: img2, title: "VOLVO XC 90", price: "₹62,00,000" },
+    { image: img3, title: "MUSTANG GT", price: "₹85,00,000" },
+    { image: img4, title: "C43 AMG", price: "₹75,00,000" },
+    { image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
+    // Add more items as needed
+  ];
+
+  const filteredItems = collectionItems.filter(item =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       <title>Luxewheels - Where Elegance Meets The Road</title>
@@ -20,6 +45,8 @@ function Home() {
             type="text"
             className="search-bar"
             placeholder="Tell us your dream..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
           <div className="car-showcase">
             <img src={img1} alt="Luxury car showcase" className="car-image" />
@@ -30,41 +57,64 @@ function Home() {
       <section className="Collection">
         <h2>Our Collection</h2>
         <div className="collection-cards">
-          <div className="collection-card">
-            <img src={img2} alt="Car" />
-            <h3>VOLVO XC 90</h3>
-            <p>₹62,00,000</p>
-            <button className="collection-btn">View Product</button>
-          </div>
-          <div className="collection-card">
-            <img src={img3} alt="Car" />
-            <h3>MUSTANG GT</h3>
-            <p>₹85,00,000</p>
-            <button className="collection-btn">View Product</button>
-          </div>
-          <div className="collection-card">
-            <img src={img4} alt="Car" />
-            <h3>C43 AMG</h3>
-            <p>₹75,00,000</p>
-            <button className="collection-btn">View Product</button>
-          </div>
-          <div className="collection-card">
-            <img src={img5} alt="Car" />
-            <h3>ROLLS ROYCE GHOST SERIES</h3>
-            <p>₹2,60,00,000</p>
-            <button className="collection-btn">View Product</button>
-          </div>
+          {filteredItems.map((item, index) => (
+            <CollectionCard
+              key={index}
+              image={item.image}
+              title={item.title}
+              price={item.price}
+            />
+          ))}
         </div>
       </section>
 
       <section className="about">
-        <h2>About us</h2>
+        <h2>About Us</h2>
         <p>
           Luxewheels is the place to be for all your luxury car needs. We offer
-          a wide range of luxury cars for sale and rent. We also offer a
-          platform for you to sell your luxury car. Our team of experts is
+          a wide range of luxury cars for sale and rent. Our team of experts is
           dedicated to providing you with the best service possible. We are
           here to help you find the car of your dreams.
+        </p>
+      </section>
+
+      <section className="services">
+        <h2>Our Services</h2>
+        <ul>
+          <li>Luxury Car Rentals</li>
+          <li>Car Sales</li>
+          <li>Luxury Car Auctions</li>
+          <li>Concierge Services</li>
+          <li>Vehicle Maintenance and Care</li>
+        </ul>
+      </section>
+
+      <section className="testimonials">
+        <h2>What Our Clients Say</h2>
+        <div className="testimonial-card">
+          <p>
+            "Luxewheels provided an exceptional experience! The car was in
+            pristine condition, and the service was top-notch."
+          </p>
+          <p>— John D., Business Executive</p>
+        </div>
+        <div className="testimonial-card">
+          <p>
+            "I rented a Rolls Royce for my wedding, and it was the highlight of
+            the day. Highly recommend Luxewheels!"
+          </p>
+          <p>— Sarah L., Bride</p>
+        </div>
+      </section>
+
+      <section className="contact">
+        <h2>Contact Us</h2>
+        <p>
+          Have questions or need assistance? Reach out to us at:
+          <br />
+          Email: support@luxewheels.com
+          <br />
+          Phone: +1 (234) 567-890
         </p>
       </section>
 
