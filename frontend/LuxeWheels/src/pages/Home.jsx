@@ -1,19 +1,20 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "./Home.css";
-import Navbar from "../components/Navbar"; // Import Navbar component
+import Navbar from "../components/Navbar";
 import img1 from "./car.png";
 import img2 from "./car2.png";
 import img3 from "./car3.png";
 import img4 from "./car4.png";
 import img5 from "./car5.png";
 
-const CollectionCard = ({ image, title, price }) => {
+const CollectionCard = ({ image, title, price, id }) => {
   return (
     <div className="collection-card">
       <img src={image} alt={title} />
       <h3>{title}</h3>
       <p>{price}</p>
-      <button className="collection-btn">View Details</button>
+      <Link to={`/car/${id}`} className="collection-btn">View Details</Link>
     </div>
   );
 };
@@ -22,10 +23,14 @@ function Home() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const collectionItems = [
-    { image: img2, title: "VOLVO XC 90", price: "₹62,00,000" },
-    { image: img3, title: "MUSTANG GT", price: "₹85,00,000" },
-    { image: img4, title: "C43 AMG", price: "₹75,00,000" },
-    { image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
+    { id: 0, image: img2, title: "VOLVO XC 90", price: "₹62,00,000" },
+    { id: 1, image: img3, title: "MUSTANG GT", price: "₹85,00,000" },
+    { id: 2, image: img4, title: "C43 AMG", price: "₹75,00,000" },
+    { id: 3, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
+    { id: 4, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
+    { id: 5, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
+    { id: 6, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
+    { id: 7, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
     // Add more items as needed
   ];
 
@@ -36,7 +41,7 @@ function Home() {
   return (
     <>
       <title>Luxewheels - Where Elegance Meets The Road</title>
-      <Navbar /> {/* Use Navbar Component */}
+      <Navbar />
 
       <main>
         <section className="hero">
@@ -57,9 +62,10 @@ function Home() {
       <section className="Collection">
         <h2>Our Collection</h2>
         <div className="collection-cards">
-          {filteredItems.map((item, index) => (
+          {filteredItems.map((item) => (
             <CollectionCard
-              key={index}
+              key={item.id}
+              id={item.id}
               image={item.image}
               title={item.title}
               price={item.price}
@@ -68,7 +74,8 @@ function Home() {
         </div>
       </section>
 
-      <section className="about">
+      {/* Rest of the Home component remains the same */}
+      <section id="about" className="about">
         <h2>About Us</h2>
         <p>
           Luxewheels is the place to be for all your luxury car needs. We offer

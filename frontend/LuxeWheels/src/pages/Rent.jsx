@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import './Rent.css';
 import Navbar from '../components/Navbar';
+import porsche911GTS from './images/Porsche 911 GT3.jpg';
+import car2 from './car2.png';
+import car4 from './car4.png';
+import car5 from './car5.png';
+import Ferrari from './images/Ferrari Roma.jpg';
+import Aston from './images/Aston Martin.jpg';
+import car3 from './car3.png';
+import Range from './images/Range Rover.jpeg';
 
 const RentPage = () => {
   const [selectedCar, setSelectedCar] = useState(null);
@@ -13,7 +21,7 @@ const RentPage = () => {
       name: 'Porsche 911 GTS',
       category: 'Sports',
       price: 899,
-      image: '/images/porsche-911.jpg',
+      image: porsche911GTS,
       description: 'Experience the thrill of German engineering with this iconic sports car.',
       specs: {
         engine: '3.0L Twin-Turbo Flat-6',
@@ -24,10 +32,10 @@ const RentPage = () => {
     },
     {
       id: 2,
-      name: 'Lamborghini Huracán',
+      name: 'VOLVO XC 90',
       category: 'Supercar',
       price: 1499,
-      image: '/images/lamborghini-huracan.jpg',
+      image: car2,
       description: 'Turn heads with this stunning Italian masterpiece.',
       specs: {
         engine: '5.2L V10',
@@ -38,10 +46,10 @@ const RentPage = () => {
     },
     {
       id: 3,
-      name: 'Bentley Continental GT',
+      name: 'C43 AMG',
       category: 'Luxury',
       price: 1199,
-      image: '/images/bentley-continental.jpg',
+      image: car4,
       description: 'Ultimate luxury and comfort with incredible performance.',
       specs: {
         engine: '6.0L W12',
@@ -55,7 +63,7 @@ const RentPage = () => {
       name: 'Rolls-Royce Ghost',
       category: 'Ultra Luxury',
       price: 1899,
-      image: '/images/rolls-royce-ghost.jpg',
+      image: car5,
       description: 'The pinnacle of luxury automotive craftsmanship.',
       specs: {
         engine: '6.75L Twin-Turbo V12',
@@ -69,7 +77,7 @@ const RentPage = () => {
       name: 'Ferrari Roma',
       category: 'Sports',
       price: 1299,
-      image: '/images/ferrari-roma.jpg',
+      image: Ferrari,
       description: 'Italian elegance meets racing heritage.',
       specs: {
         engine: '3.9L Twin-Turbo V8',
@@ -83,8 +91,36 @@ const RentPage = () => {
       name: 'Aston Martin DB11',
       category: 'Grand Tourer',
       price: 1099,
-      image: '/images/aston-martin-db11.jpg',
+      image: Aston,
       description: 'British elegance with a powerful presence.',
+      specs: {
+        engine: '4.0L Twin-Turbo V8',
+        horsepower: '528 hp',
+        acceleration: '0-60 mph in 3.9s',
+        topSpeed: '187 mph'
+      }
+    },
+    {
+      id: 7,
+      name: 'MUSTANG GT',
+      category: 'Grand Tourer',
+      price: 1099,
+      image: car3,
+      description: ' A performance-focused coupe with a classic American muscle car design.',
+      specs: {
+        engine: '4.0L Twin-Turbo V8',
+        horsepower: '528 hp',
+        acceleration: '0-60 mph in 3.9s',
+        topSpeed: '187 mph'
+      }
+    },
+    {
+      id: 8,
+      name: 'RANGE ROVER SPORT',
+      category: 'Grand Tourer',
+      price: 1099,
+      image: Range,
+      description: 'Performance-focused SUV known for its assertive power, responsive handling, and luxurious interior.',
       specs: {
         engine: '4.0L Twin-Turbo V8',
         horsepower: '528 hp',

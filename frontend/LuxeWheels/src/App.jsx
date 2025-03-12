@@ -9,6 +9,8 @@ import Home from './pages/Home'
 import Admin from './pages/Admin'
 import Rent from './pages/Rent'
 import Sell from './pages/Sell'
+import CarDetails from './pages/CarDetails'
+import Buy from './pages/Buy'
 
 function App() {
 
@@ -22,6 +24,8 @@ function App() {
       <Route path='/admin' element={<Admin/>}/>
       <Route path='/rent' element={<Rent/>}/>
       <Route path='/sell' element={<Sell/>}/>
+      <Route path='/buy' element={<Buy/>}/>
+      <Route path="/car/:id" element={<CarDetails />} />
       </Routes>
     </>
   )
