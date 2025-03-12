@@ -12,6 +12,7 @@ import Sell from './pages/Sell'
 import CarDetails from './pages/CarDetails'
 import Buy from './pages/Buy'
 import Profile from './pages/Profile'
+import ForgotPassword from './pages/ForgotPassword'
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
       <Route path='/buy' element={<Buy/>}/>
       <Route path='/profile' element={<Profile/>}/>
       <Route path="/car/:id" element={<CarDetails />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </>
   )
