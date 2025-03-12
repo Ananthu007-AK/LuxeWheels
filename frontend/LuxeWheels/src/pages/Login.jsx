@@ -27,8 +27,14 @@ function Login() {
 
 
         localStorage.setItem('token', response.data.token)
+        localStorage.setItem('role', response.data.role)
 
-        navigate('/')
+        if (response.data.role === "admin") {
+            navigate('/admin');
+        } else {
+            navigate('/');
+        }
+        // navigate('/')
 
         alert(response.data.msg)
     }

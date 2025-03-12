@@ -1,17 +1,21 @@
-const jwt=require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
-
-function verifyToken(req,res,next){
-    const token=req.header('Authorization');
-    if(!token)
-        return res.status(401).json({error:'Access Denied'});
-    try{
-        const decoded=jwt.verify(token,process.env.JWT_SECRET);
-        req.userid=decoded.userid;
-        next()
+function verifyToken(req, res, next) {
+    const authHeader = req.header('Authorization');
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ error: 'Access Denied' });
     }
-    catch(error){
-        res.status(401).json({error:'Invalid Token'});
+
+    const token = authHeader.split(" ")[1]; // Extract token after "Bearer"
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.userId = decoded.userId; // ✅ Correct property name
+        req.role = decoded.role; // ✅ Store role for authorization
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid Token' });
     }
 }
-module.exports=verifyToken;
+
+module.exports = verifyToken;
