@@ -11,6 +11,7 @@ import Rent from './pages/Rent'
 import Sell from './pages/Sell'
 import CarDetails from './pages/CarDetails'
 import Buy from './pages/Buy'
+import Profile from './pages/Profile'
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
       <Route path='/rent' element={<Rent/>}/>
       <Route path='/sell' element={<Sell/>}/>
       <Route path='/buy' element={<Buy/>}/>
+      <Route path='/profile' element={<Profile/>}/>
       <Route path="/car/:id" element={<CarDetails />} />
       </Routes>
     </>

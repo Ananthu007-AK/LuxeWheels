@@ -485,3 +485,249 @@
       font-size: 28px;
     }
   }
+
+
+
+
+
+  /* Add these styles to your RentPage.css file */
+
+/* Booking Action Button */
+.booking-action {
+  margin-top: 30px;
+}
+
+.booking-title {
+  font-size: 20px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.book-now-button {
+  background-color: #222;
+  color: white;
+  padding: 15px 35px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.book-now-button:hover {
+  background-color: #000;
+}
+
+/* Form Modal */
+.booking-form-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.booking-form-modal {
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.form-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding: 20px 25px;
+}
+
+.form-modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.close-modal-button {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.2s ease;
+}
+
+.close-modal-button:hover {
+  color: #222;
+}
+
+.form-modal-car-summary {
+  display: flex;
+  padding: 20px 25px;
+  border-bottom: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.form-car-thumbnail {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.form-car-details {
+  margin-left: 20px;
+}
+
+.form-car-details h3 {
+  margin: 0 0 5px;
+  font-size: 18px;
+}
+
+.form-car-category {
+  color: #888;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.form-car-price {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.form-price-interval {
+  font-weight: normal;
+  font-size: 14px;
+  color: #888;
+}
+
+/* Form Styling */
+.booking-detail-form {
+  padding: 25px;
+}
+
+.form-row {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  flex: 1;
+  margin-right: 15px;
+}
+
+.form-group:last-child {
+  margin-right: 0;
+}
+
+.form-group.full-width {
+  width: 100%;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #999;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.cancel-button {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.cancel-button:hover {
+  background-color: #f5f5f5;
+}
+
+.confirm-button {
+  background-color: #222;
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.confirm-button:hover {
+  background-color: #000;
+}
+
+/* Responsive Form */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-group {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .form-modal-car-summary {
+    flex-direction: column;
+  }
+  
+  .form-car-details {
+    margin-left: 0;
+    margin-top: 15px;
+  }
+  
+  .form-car-thumbnail {
+    width: 100%;
+    height: 150px;
+  }
+}

@@ -8,6 +8,25 @@ function CarDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("buy");
+  const [showEnquiryForm, setShowEnquiryForm] = useState(false);
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [enquiryData, setEnquiryData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: ""
+  });
+  
+  // New booking form state
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [bookingData, setBookingData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    pickupDate: "",
+    returnDate: "",
+    specialRequests: ""
+  });
 
   // This would typically come from an API or data store
   // For now, we'll simulate with a hardcoded collection
@@ -26,7 +45,8 @@ function CarDetails() {
         transmission: "8-Speed Automatic",
         acceleration: "0-100 km/h in 6.5 seconds",
         topSpeed: "230 km/h"
-      }
+      },
+      category: "Luxury SUV"
     },
     { 
       id: "1", 
@@ -42,7 +62,8 @@ function CarDetails() {
         transmission: "10-Speed Automatic",
         acceleration: "0-100 km/h in 4.2 seconds",
         topSpeed: "250 km/h"
-      }
+      },
+      category: "Sports Car"
     },
     // Add more cars with similar structure
   ];
@@ -57,6 +78,73 @@ function CarDetails() {
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + car.images.length) % car.images.length);
+  };
+
+  const handleBuyClick = (car) => {
+    setSelectedCar(car);
+    setShowEnquiryForm(true);
+    // Set the car name in the message field
+    setEnquiryData({
+      ...enquiryData,
+      message: `I am interested in buying the ${car.title} priced at ${car.price}.`
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEnquiryData({
+      ...enquiryData,
+      [name]: value
+    });
+  };
+
+  const handleEnquirySubmit = (e) => {
+    e.preventDefault();
+    // Here you would typically send the data to your backend
+    console.log("Enquiry submitted:", enquiryData);
+    alert("Your enquiry has been submitted successfully! Our team will contact you soon.");
+    setShowEnquiryForm(false);
+    setEnquiryData({
+      name: "",
+      email: "",
+      phone: "",
+      message: ""
+    });
+  };
+
+  // New handlers for booking form
+  const handleOpenBookingForm = () => {
+    setShowBookingForm(true);
+    setSelectedCar(car);
+  };
+
+  const handleCloseBookingForm = () => {
+    setShowBookingForm(false);
+  };
+
+  const handleBookingInputChange = (e) => {
+    const { name, value } = e.target;
+    setBookingData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+  const handleBookingSubmit = (e) => {
+    e.preventDefault();
+    alert(`Rental request submitted for ${car.title} from ${bookingData.pickupDate} to ${bookingData.returnDate}`);
+    setShowBookingForm(false);
+    // Here you would typically handle the form submission to your backend
+    console.log("Booking submitted:", bookingData);
+    // Reset form data
+    setBookingData({
+      name: "",
+      phone: "",
+      email: "",
+      pickupDate: "",
+      returnDate: "",
+      specialRequests: ""
+    });
   };
 
   return (
@@ -118,7 +206,7 @@ function CarDetails() {
                   <div className="price">{car.price}</div>
                   <p>Includes 3-year warranty and complimentary maintenance</p>
                   <button className="action-button">Schedule a Test Drive</button>
-                  <button className="action-button primary">Buy Now</button>
+                  <button className="action-button primary" onClick={() => handleBuyClick(car)}>Buy Now</button>
                   <div className="financing-options">
                     <h3>Financing Options Available</h3>
                     <p>EMI starting from ₹80,000 per month</p>
@@ -143,7 +231,15 @@ function CarDetails() {
                       <p>30 days with 20% discount</p>
                     </div>
                   </div>
-                  <button className="action-button primary">Rent Now</button>
+                  <div className="booking-action">
+                    <h3 className="booking-title">Ready for an extraordinary driving experience?</h3>
+                    <button 
+                      onClick={handleOpenBookingForm} 
+                      className="action-button primary"
+                    >
+                      Reserve Now
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -183,6 +279,193 @@ function CarDetails() {
           </div>
         </div>
       </div>
+
+      {/* Buy Enquiry Form Modal */}
+      {showEnquiryForm && (
+        <div className="buy-page-enquiry-overlay">
+          <div className="buy-page-enquiry-form-container">
+            <button 
+              className="buy-page-close-button"
+              onClick={() => setShowEnquiryForm(false)}
+            >
+              &times;
+            </button>
+            <h2 className="buy-page-enquiry-title">
+              Enquire About {selectedCar?.title}
+            </h2>
+            <form className="buy-page-enquiry-form" onSubmit={handleEnquirySubmit}>
+              <div className="buy-page-form-group">
+                <label htmlFor="name" className="buy-page-form-label">Full Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  className="buy-page-form-input"
+                  placeholder="Your full name"
+                  value={enquiryData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="buy-page-form-group">
+                <label htmlFor="email" className="buy-page-form-label">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  className="buy-page-form-input"
+                  placeholder="Your email address"
+                  value={enquiryData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="buy-page-form-group">
+                <label htmlFor="phone" className="buy-page-form-label">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  className="buy-page-form-input"
+                  placeholder="Your phone number"
+                  value={enquiryData.phone}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="buy-page-form-group">
+                <label htmlFor="message" className="buy-page-form-label">Message</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  className="buy-page-form-textarea"
+                  placeholder="Additional details or questions"
+                  value={enquiryData.message}
+                  onChange={handleInputChange}
+                  rows="4"
+                  required
+                ></textarea>
+              </div>
+              
+              <button type="submit" className="buy-page-submit-button">
+                Submit Enquiry
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* New Booking Form Modal - matching the style from RentPage */}
+      {showBookingForm && (
+        <div className="booking-form-modal-overlay">
+          <div className="booking-form-modal">
+            <div className="form-modal-header">
+              <h2>Book Your Experience</h2>
+              <button className="close-modal-button" onClick={handleCloseBookingForm}>×</button>
+            </div>
+            
+            <div className="form-modal-car-summary">
+              <img src={car.images[0]} alt={car.title} className="form-car-thumbnail" />
+              <div className="form-car-details">
+                <h3>{car.title}</h3>
+                <p className="form-car-category">{car.category}</p>
+                <p className="form-car-price">{car.rentPrice} <span className="form-price-interval">per day</span></p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleBookingSubmit} className="booking-detail-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="pickupDate">Pick-up Date</label>
+                  <input 
+                    type="date" 
+                    id="pickupDate"
+                    name="pickupDate"
+                    value={bookingData.pickupDate}
+                    onChange={handleBookingInputChange}
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="returnDate">Return Date</label>
+                  <input 
+                    type="date" 
+                    id="returnDate"
+                    name="returnDate"
+                    value={bookingData.returnDate}
+                    onChange={handleBookingInputChange}
+                    required 
+                  />
+                </div>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="bookingName">Full Name</label>
+                  <input 
+                    type="text" 
+                    id="bookingName"
+                    name="name"
+                    placeholder="Your full name"
+                    value={bookingData.name}
+                    onChange={handleBookingInputChange}
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="bookingPhone">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    id="bookingPhone"
+                    name="phone"
+                    placeholder="Your phone number"
+                    value={bookingData.phone}
+                    onChange={handleBookingInputChange}
+                    required 
+                  />
+                </div>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label htmlFor="bookingEmail">Email Address</label>
+                  <input 
+                    type="email" 
+                    id="bookingEmail"
+                    name="email"
+                    placeholder="Your email address"
+                    value={bookingData.email}
+                    onChange={handleBookingInputChange}
+                    required 
+                  />
+                </div>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label htmlFor="specialRequests">Special Requests (Optional)</label>
+                  <textarea 
+                    id="specialRequests"
+                    name="specialRequests"
+                    placeholder="Any special requirements or preferences"
+                    rows="3"
+                    value={bookingData.specialRequests}
+                    onChange={handleBookingInputChange}
+                  ></textarea>
+                </div>
+              </div>
+              
+              <div className="form-actions">
+                <button type="button" className="cancel-button" onClick={handleCloseBookingForm}>Cancel</button>
+                <button type="submit" className="confirm-button">Confirm Reservation</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <footer>
         <p>&copy; 2025 Luxewheels</p>

@@ -13,6 +13,7 @@ const Navbar = () => {
         <Link to="/rent">Rent</Link>
         <Link to="/sell">Sell</Link>
         <ScrollLink to="about" smooth={true} duration={500}>About us</ScrollLink>
+        <Link to="/profile">Profile</Link>
         <Link to="/Login">Login/Signup</Link>
       </div>
     </nav>

@@ -14,6 +14,14 @@ const RentPage = () => {
   const [selectedCar, setSelectedCar] = useState(null);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    pickupDate: '',
+    returnDate: ''
+  });
 
   const luxuryCars = [
     {
@@ -144,28 +152,55 @@ const RentPage = () => {
     });
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+  const handleOpenBookingForm = () => {
+    setShowBookingForm(true);
+    // Initialize form with any existing date range data
+    setFormData(prevData => ({
+      ...prevData,
+      pickupDate: dateRange.start,
+      returnDate: dateRange.end
+    }));
+  };
+
+  const handleCloseBookingForm = () => {
+    setShowBookingForm(false);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Rental request submitted for ${selectedCar.name} from ${dateRange.start} to ${dateRange.end}`);
+    alert(`Rental request submitted for ${selectedCar.name} from ${formData.pickupDate} to ${formData.returnDate}`);
+    setShowBookingForm(false);
     // Here you would typically handle the form submission to your backend
   };
 
   return (
     <div className="rental-page-container">
       <Navbar />
-      <div className="showcase-banner">
-        <h1 className="showcase-heading">Luxury Car Rentals</h1>
-        <p className="showcase-subtext">Experience extraordinary performance and sophistication</p>
-        <div className="search-wrapper">
-          <input 
-            type="text" 
-            className="search-input"
-            placeholder="Search your dream car..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      
+      {/* Conditional rendering of showcase banner */}
+      {!selectedCar && (
+        <div className="showcase-banner">
+          <h1 className="showcase-heading">Luxury Car Rentals</h1>
+          <p className="showcase-subtext">Experience extraordinary performance and sophistication</p>
+          <div className="search-wrapper">
+            <input 
+              type="text" 
+              className="search-input"
+              placeholder="Search your dream car..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {selectedCar ? (
         <div className="vehicle-details-wrapper">
@@ -204,48 +239,15 @@ const RentPage = () => {
                 </div>
               </div>
               
-              <form onSubmit={handleSubmit} className="reservation-form">
-                <h3 className="form-title">Book Your Experience</h3>
-                <div className="form-flex-row">
-                  <div className="input-block">
-                    <label className="input-label">Pick-up Date</label>
-                    <input 
-                      type="date" 
-                      className="input-field"
-                      required 
-                      value={dateRange.start}
-                      onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
-                    />
-                  </div>
-                  <div className="input-block">
-                    <label className="input-label">Return Date</label>
-                    <input 
-                      type="date" 
-                      className="input-field"
-                      required
-                      value={dateRange.end}
-                      onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
-                    />
-                  </div>
-                </div>
-                <div className="form-flex-row">
-                  <div className="input-block">
-                    <label className="input-label">Name</label>
-                    <input type="text" className="input-field" placeholder="Your full name" required />
-                  </div>
-                  <div className="input-block">
-                    <label className="input-label">Phone</label>
-                    <input type="tel" className="input-field" placeholder="Your phone number" required />
-                  </div>
-                </div>
-                <div className="form-flex-row form-flex-row--full">
-                  <div className="input-block">
-                    <label className="input-label">Email</label>
-                    <input type="email" className="input-field" placeholder="Your email address" required />
-                  </div>
-                </div>
-                <button type="submit" className="submit-button">Reserve Now</button>
-              </form>
+              <div className="booking-action">
+                <h3 className="booking-title">Ready for an extraordinary driving experience?</h3>
+                <button 
+                  onClick={handleOpenBookingForm} 
+                  className="book-now-button"
+                >
+                  Reserve Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -265,6 +267,114 @@ const RentPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Form Modal */}
+      {showBookingForm && selectedCar && (
+        <div className="booking-form-modal-overlay">
+          <div className="booking-form-modal">
+            <div className="form-modal-header">
+              <h2>Book Your Experience</h2>
+              <button className="close-modal-button" onClick={handleCloseBookingForm}>×</button>
+            </div>
+            
+            <div className="form-modal-car-summary">
+              <img src={selectedCar.image} alt={selectedCar.name} className="form-car-thumbnail" />
+              <div className="form-car-details">
+                <h3>{selectedCar.name}</h3>
+                <p className="form-car-category">{selectedCar.category}</p>
+                <p className="form-car-price">${selectedCar.price} <span className="form-price-interval">per day</span></p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="booking-detail-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="pickupDate">Pick-up Date</label>
+                  <input 
+                    type="date" 
+                    id="pickupDate"
+                    name="pickupDate"
+                    value={formData.pickupDate}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="returnDate">Return Date</label>
+                  <input 
+                    type="date" 
+                    id="returnDate"
+                    name="returnDate"
+                    value={formData.returnDate}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="name">Full Name</label>
+                  <input 
+                    type="text" 
+                    id="name"
+                    name="name"
+                    placeholder="Your full name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="phone">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    id="phone"
+                    name="phone"
+                    placeholder="Your phone number"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label htmlFor="email">Email Address</label>
+                  <input 
+                    type="email" 
+                    id="email"
+                    name="email"
+                    placeholder="Your email address"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group full-width">
+                  <label htmlFor="specialRequests">Special Requests (Optional)</label>
+                  <textarea 
+                    id="specialRequests"
+                    name="specialRequests"
+                    placeholder="Any special requirements or preferences"
+                    rows="3"
+                    onChange={handleInputChange}
+                  ></textarea>
+                </div>
+              </div>
+              
+              <div className="form-actions">
+                <button type="button" className="cancel-button" onClick={handleCloseBookingForm}>Cancel</button>
+                <button type="submit" className="confirm-button">Confirm Reservation</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
