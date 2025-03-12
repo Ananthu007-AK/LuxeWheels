@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "./Buy.css";
-
-// Import your car images (assuming they're in the same location)
 import img2 from "./car.png";
 import img3 from "./car2.png";
 import img4 from "./car3.png";
@@ -11,223 +9,195 @@ import img5 from "./car4.png";
 import img6 from "./car5.png";
 
 function Buy() {
-  const { id } = useParams();
-  const [formData, setFormData] = useState({
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showEnquiryForm, setShowEnquiryForm] = useState(false);
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [enquiryData, setEnquiryData] = useState({
     name: "",
     email: "",
     phone: "",
-    message: "",
-    preferred_contact: "email",
-    test_drive: false
+    message: ""
   });
-  const [submitted, setSubmitted] = useState(false);
 
-  // Sample car database - in a real app this would come from an API or context
-  const carDatabase = [
-    { id: 0, image: img3, title: "VOLVO XC 90", price: "₹62,00,000", specs: "2.0L 4-cylinder Turbo, 400 HP, AWD" },
-    { id: 1, image: img4, title: "MUSTANG GT", price: "₹85,00,000", specs: "5.0L V8, 460 HP, RWD" },
-    { id: 2, image: img5, title: "C43 AMG", price: "₹75,00,000", specs: "3.0L V6 Biturbo, 385 HP, AWD" },
-    { id: 3, image: img6, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000", specs: "6.6L V12, 563 HP, AWD" },
-    { id: 4, image: img2, title: "MERCEDES S-CLASS", price: "₹1,60,00,000", specs: "4.0L V8 Biturbo, 496 HP, AWD" }
+  const carCollection = [
+    { id: 1, image: img3, title: "VOLVO XC 90", price: "₹62,00,000", year: "2023", mileage: "0 km", engine: "2.0L Turbocharged", transmission: "Automatic" },
+    { id: 2, image: img4, title: "MUSTANG GT", price: "₹85,00,000", year: "2023", mileage: "0 km", engine: "5.0L V8", transmission: "Manual" },
+    { id: 3, image: img5, title: "C43 AMG", price: "₹75,00,000", year: "2022", mileage: "1,200 km", engine: "3.0L Biturbo V6", transmission: "Automatic" },
+    { id: 4, image: img6, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000", year: "2023", mileage: "0 km", engine: "6.75L Twin-Turbo V12", transmission: "Automatic" },
+    { id: 5, image: img6, title: "BENTLEY CONTINENTAL GT", price: "₹1,90,00,000", year: "2022", mileage: "500 km", engine: "6.0L W12", transmission: "Automatic" },
+    { id: 6, image: img3, title: "FERRARI 488 GTB", price: "₹3,50,00,000", year: "2023", mileage: "0 km", engine: "3.9L Twin-Turbo V8", transmission: "Automatic" },
   ];
 
-  // Get current car based on ID
-  const currentCar = carDatabase.find(car => car.id === parseInt(id)) || carDatabase[0];
+  const filteredCars = carCollection.filter((car) =>
+    car.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
+  const handleBuyClick = (car) => {
+    setSelectedCar(car);
+    setShowEnquiryForm(true);
+    // Set the car name in the message field
+    setEnquiryData({
+      ...enquiryData,
+      message: `I am interested in buying the ${car.title} priced at ${car.price}.`
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEnquiryData({
+      ...enquiryData,
+      [name]: value
+    });
+  };
+
+  const handleEnquirySubmit = (e) => {
     e.preventDefault();
-    console.log("Inquiry submitted:", formData);
-    setSubmitted(true);
-    
-    // Reset form after 5 seconds
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        message: "",
-        preferred_contact: "email",
-        test_drive: false
-      });
-    }, 5000);
+    // Here you would typically send the data to your backend
+    console.log("Enquiry submitted:", enquiryData);
+    alert("Your enquiry has been submitted successfully! Our team will contact you soon.");
+    setShowEnquiryForm(false);
+    setEnquiryData({
+      name: "",
+      email: "",
+      phone: "",
+      message: ""
+    });
   };
 
   return (
     <>
-      <title>Luxewheels - Enquire About {currentCar.title}</title>
+      <title>Luxewheels - Buy Luxury Cars</title>
       <Navbar />
 
-      <div className="buy-container">
-        <div className="vehicle-showcase">
-          <img src={currentCar.image} alt={currentCar.title} className="showcase-image" />
-          <div className="vehicle-details">
-            <h1 className="vehicle-title">{currentCar.title}</h1>
-            <p className="vehicle-price">{currentCar.price}</p>
-            <p className="vehicle-specs">{currentCar.specs}</p>
-            <div className="vehicle-badges">
-              <span className="badge badge-premium">Premium</span>
-              <span className="badge badge-available">Available</span>
-            </div>
+      <div className="buy-page-container">
+        <section className="buy-page-hero">
+          <h1 className="buy-page-title">Exclusive Collection</h1>
+          <p className="buy-page-subtitle">Find your dream luxury vehicle</p>
+          
+          <div className="buy-page-search-container">
+            <input
+              type="text"
+              className="buy-page-search"
+              placeholder="Search for your dream car..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-        </div>
+        </section>
 
-        <div className="enquiry-section">
-          <h2 className="enquiry-heading">Interested in this luxury vehicle?</h2>
-          <p className="enquiry-subtext">
-            Complete the form below to connect with our luxury vehicle specialist.
-            No obligation to purchase - we're here to answer your questions.
-          </p>
+        <section className="buy-page-collection">
+          <h2 className="buy-page-section-title">Available Luxury Cars</h2>
+          
+          <div className="buy-page-cars-grid">
+            {filteredCars.length > 0 ? (
+              filteredCars.map((car) => (
+                <div key={car.id} className="buy-page-car-card">
+                  <div className="buy-page-car-image-container">
+                    <img src={car.image} alt={car.title} className="buy-page-car-image" />
+                  </div>
+                  <div className="buy-page-car-details">
+                    <h3 className="buy-page-car-title">{car.title}</h3>
+                    <p className="buy-page-car-price">{car.price}</p>
+                    <div className="buy-page-car-specs">
+                      <p><span>Year:</span> {car.year}</p>
+                      <p><span>Mileage:</span> {car.mileage}</p>
+                      <p><span>Engine:</span> {car.engine}</p>
+                      <p><span>Transmission:</span> {car.transmission}</p>
+                    </div>
+                    <button 
+                      className="buy-page-buy-button"
+                      onClick={() => handleBuyClick(car)}
+                    >
+                      Buy Now
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="buy-page-no-results">No cars match your search criteria.</p>
+            )}
+          </div>
+        </section>
+      </div>
 
-          {submitted ? (
-            <div className="success-message">
-              <h3>Thank you for your interest!</h3>
-              <p>Our specialist will contact you shortly regarding the {currentCar.title}.</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="enquiry-form">
-              <div className="form-group">
-                <label htmlFor="name">Your Name</label>
+      {showEnquiryForm && (
+        <div className="buy-page-enquiry-overlay">
+          <div className="buy-page-enquiry-form-container">
+            <button 
+              className="buy-page-close-button"
+              onClick={() => setShowEnquiryForm(false)}
+            >
+              &times;
+            </button>
+            <h2 className="buy-page-enquiry-title">
+              Enquire About {selectedCar?.title}
+            </h2>
+            <form className="buy-page-enquiry-form" onSubmit={handleEnquirySubmit}>
+              <div className="buy-page-form-group">
+                <label htmlFor="name" className="buy-page-form-label">Full Name</label>
                 <input
                   type="text"
                   id="name"
                   name="name"
-                  className="form-control"
-                  value={formData.name}
-                  onChange={handleChange}
+                  className="buy-page-form-input"
+                  placeholder="Your full name"
+                  value={enquiryData.name}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
               
-              <div className="form-group">
-                <label htmlFor="email">Email Address</label>
+              <div className="buy-page-form-group">
+                <label htmlFor="email" className="buy-page-form-label">Email Address</label>
                 <input
                   type="email"
                   id="email"
                   name="email"
-                  className="form-control"
-                  value={formData.email}
-                  onChange={handleChange}
+                  className="buy-page-form-input"
+                  placeholder="Your email address"
+                  value={enquiryData.email}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
               
-              <div className="form-group">
-                <label htmlFor="phone">Phone Number</label>
+              <div className="buy-page-form-group">
+                <label htmlFor="phone" className="buy-page-form-label">Phone Number</label>
                 <input
                   type="tel"
                   id="phone"
                   name="phone"
-                  className="form-control"
-                  value={formData.phone}
-                  onChange={handleChange}
+                  className="buy-page-form-input"
+                  placeholder="Your phone number"
+                  value={enquiryData.phone}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
               
-              <div className="form-group">
-                <label htmlFor="preferred_contact">Preferred Contact Method</label>
-                <select
-                  id="preferred_contact"
-                  name="preferred_contact"
-                  className="form-select"
-                  value={formData.preferred_contact}
-                  onChange={handleChange}
-                >
-                  <option value="email">Email</option>
-                  <option value="phone">Phone</option>
-                  <option value="whatsapp">WhatsApp</option>
-                </select>
-              </div>
-              
-              <div className="form-group checkbox-group">
-                <input
-                  type="checkbox"
-                  id="test_drive"
-                  name="test_drive"
-                  className="form-check"
-                  checked={formData.test_drive}
-                  onChange={handleChange}
-                />
-                <label htmlFor="test_drive">I would like to schedule a test drive</label>
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="message">Your Message (Optional)</label>
+              <div className="buy-page-form-group">
+                <label htmlFor="message" className="buy-page-form-label">Message</label>
                 <textarea
                   id="message"
                   name="message"
-                  className="form-textarea"
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="Any specific questions or requirements?"
+                  className="buy-page-form-textarea"
+                  placeholder="Additional details or questions"
+                  value={enquiryData.message}
+                  onChange={handleInputChange}
                   rows="4"
+                  required
                 ></textarea>
               </div>
               
-              <div className="form-actions">
-                <button type="submit" className="submit-button">Submit Enquiry</button>
-                <Link to="/" className="back-link">Back to Collection</Link>
-              </div>
-              
-              <p className="privacy-note">
-                Your information will be handled according to our Privacy Policy.
-                We never share your details with third parties.
-              </p>
+              <button type="submit" className="buy-page-submit-button">
+                Submit Enquiry
+              </button>
             </form>
-          )}
+          </div>
         </div>
-        
-        <div className="benefits-section">
-          <h3 className="benefits-title">The Luxewheels Advantage</h3>
-          <ul className="benefits-list">
-            <li className="benefit-item">
-              <span className="benefit-icon">✓</span>
-              <span className="benefit-text">Personalized Shopping Experience</span>
-            </li>
-            <li className="benefit-item">
-              <span className="benefit-icon">✓</span>
-              <span className="benefit-text">Exclusive Test Drive Opportunities</span>
-            </li>
-            <li className="benefit-item">
-              <span className="benefit-icon">✓</span>
-              <span className="benefit-text">Transparent Pricing & No Hidden Fees</span>
-            </li>
-            <li className="benefit-item">
-              <span className="benefit-icon">✓</span>
-              <span className="benefit-text">Premium After-Sales Support</span>
-            </li>
-            <li className="benefit-item">
-              <span className="benefit-icon">✓</span>
-              <span className="benefit-text">Flexible Financing Options</span>
-            </li>
-          </ul>
-        </div>
-      </div>
+      )}
 
-      <section className="related-vehicles">
-        <h2 className="related-title">You May Also Like</h2>
-        <div className="related-container">
-          {carDatabase.filter(car => car.id !== parseInt(id)).slice(0, 3).map(car => (
-            <div key={car.id} className="related-card">
-              <img src={car.image} alt={car.title} className="related-image" />
-              <h3 className="related-name">{car.title}</h3>
-              <p className="related-price">{car.price}</p>
-              <Link to={`/car/${car.id}`} className="related-link">View Details</Link>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <footer className="buy-footer">
+      <footer className="buy-page-footer">
         <p>&copy; 2025 Luxewheels - Where Elegance Meets The Road</p>
       </footer>
     </>
