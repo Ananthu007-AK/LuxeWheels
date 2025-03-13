@@ -1,46 +1,79 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react'
+import './Login.css'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
 
-  async function handleForgotPassword(e) {
-    e.preventDefault();
+    async function handleSubmit(e) {
+        e.preventDefault();
+        
+        if (email === '') {
+            setMessage("Email cannot be empty");
+            return;
+        }
 
-    if (!email) {
-      alert("Please enter your email");
-      return;
+        setIsLoading(true);
+        
+        try {
+            const response = await axios.post('http://localhost:3000/user/forgot-password', {
+                email: email
+            });
+            
+            setMessage(response.data.msg || "Password reset email sent. Check your inbox.");
+            setIsLoading(false);
+            
+            // Optionally redirect after a delay
+            setTimeout(() => {
+                navigate('/login');
+            }, 3000);
+            
+        } catch (error) {
+            setIsLoading(false);
+            
+            if (error.response && error.response.data) {
+                setMessage(error.response.data.msg || "An error occurred");
+            } else {
+                console.error(error);
+                setMessage("An unexpected error occurred");
+            }
+        }
     }
 
-    try {
-      const response = await axios.post("http://localhost:3000/user/forgot-password", { email });
-      alert(response.data.msg);
-      navigate("/"); // Navigate to login or another page after success
-    } catch (error) {
-      console.error(error);
-      alert("Error: Unable to process request");
-    }
-  }
+    return (
+        <>
+            <div className="login-container">
+                <h2>Reset Your Password</h2>
+                <p>Enter your email to receive a password reset link</p>
 
-  return (
-    <div className="forgot-password-container">
-      <h2>Reset Your Password</h2>
-      <form onSubmit={handleForgotPassword}>
-        <input
-          type="email"
-          className="input-box"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <button className="submit-btn" type="submit">
-          Send Reset Link
-        </button>
-      </form>
-    </div>
-  );
+                {message && <div className="message">{message}</div>}
+
+                <form onSubmit={handleSubmit}>
+                    <input 
+                        type="email" 
+                        className="input-box" 
+                        placeholder="Email" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)} 
+                    />
+                    <button 
+                        className="login-btn" 
+                        type="submit" 
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "Sending..." : "Reset Password"}
+                    </button>
+                    <div className="links">
+                        <a href="/login">Back to Login</a>
+                    </div>
+                </form>
+            </div>
+        </>
+    )
 }
 
-export default ForgotPassword;
+export default ForgotPassword
