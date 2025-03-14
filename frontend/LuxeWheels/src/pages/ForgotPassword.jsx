@@ -10,7 +10,7 @@ function ForgotPassword() {
     const navigate = useNavigate();
 
     async function handleSubmit(e) {
-        e.preventDefault();
+        e.preventDefault(e);
         
         if (email === '') {
             setMessage("Email cannot be empty");
@@ -20,7 +20,7 @@ function ForgotPassword() {
         setIsLoading(true);
         
         try {
-            const response = await axios.post('http://localhost:3000/user/forgot-password', {
+            const response = await axios.post('http://localhost:3000/users/forgot-password', {
                 email: email
             });
             

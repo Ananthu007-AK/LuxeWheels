@@ -7,7 +7,7 @@ const userRoutes = require('./routes/user')
 const cors=require('cors')
 db.connect()
 
-
+const authRoutes = require('./routes/authRoutes')
 
 
 const PORT=process.env.PORT || 3003
@@ -18,6 +18,8 @@ app.use(cors())
 
 
 app.use('/user',userRoutes)
+
+app.use('/user',authRoutes)
 
 
 
