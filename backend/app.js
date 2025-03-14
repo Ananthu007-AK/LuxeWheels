@@ -27,6 +27,11 @@ app.get('/',(req,res)=>{
 })
 
 
+app.post('/user/register', (req, res) => {
+    res.json({ message: "User registered successfully!" });
+});
+
+
 app.post('/',(req,res)=>{
     res.json(req.body)
 })
