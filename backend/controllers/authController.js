@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
+
 // Nodemailer Configuration (use your SMTP details)
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -17,13 +18,15 @@ const transporter = nodemailer.createTransport({
 const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
-
+        console.log("Email:", email);
+        
         // Check if user exists
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ msg: "User with this email does not exist" });
         }
-
+        console.log("User:", user);
+        
         // Generate reset token
         const resetToken = crypto.randomBytes(32).toString("hex");
         const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
@@ -34,7 +37,7 @@ const forgotPassword = async (req, res) => {
         await user.save();
 
         // Create reset URL
-        const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+        const resetUrl = `http://localhost:5000/reset-password/${resetToken}`;
 
         // Send email
         await transporter.sendMail({
@@ -58,14 +61,20 @@ const resetPassword = async (req, res) => {
         const { token } = req.params;
         const { newPassword } = req.body;
 
+        console.log("Incoming token:", token);
+
         // Hash the token (same method used in forgotPassword)
         const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+        console.log("Hashed token:", hashedToken);
 
         // Find user with valid token
         const user = await User.findOne({
             resetPasswordToken: hashedToken,
             resetPasswordExpires: { $gt: Date.now() }, // Check token expiry
         });
+
+        console.log("Found user:", user);
 
         if (!user) {
             return res.status(400).json({ msg: "Invalid or expired token" });

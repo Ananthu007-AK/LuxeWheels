@@ -19,7 +19,7 @@ app.use(cors())
 
 app.use('/user',userRoutes)
 
-app.use('/user',authRoutes)
+app.use('/users',authRoutes)
 
 
 

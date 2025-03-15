@@ -20,7 +20,7 @@ function ForgotPassword() {
         setIsLoading(true);
         
         try {
-            const response = await axios.post('http://localhost:3000/users/forgot-password', {
+            const response = await axios.post('http://localhost:5000/users/forgot-password', {
                 email: email
             });
             
