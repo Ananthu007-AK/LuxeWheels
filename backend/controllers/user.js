@@ -69,7 +69,7 @@ const loginController = async (req, res) => {
             { expiresIn: "7d" } // Set a longer expiration time
         );
 
-        return res.status(200).json({ msg: "Login successful", token, role: user.role });
+        return res.status(200).json({ msg: "Login successful", username:user.email,token, role: user.role });
 
     } catch (error) {
         console.error(error);
@@ -96,11 +96,30 @@ const adminDashboard = async (req, res) => {
     return res.json({ message: "Welcome, Admin!" });
 };
 
+const userHome = async (req, res) => {
+    const { username } = req.params;
+
+    try {
+      const user = await User.findOne({ email: username }); // Assuming username is email
+      if (!user) return res.status(404).json({ msg: "User not found" });
+  
+      res.json({
+        name: user.username, // Ensure this matches what frontend expects
+        email: user.email,
+        role: user.role,
+      });
+    } catch (error) {
+      res.status(500).json({ msg: "Server error" });
+    }
+   
+}
+
 module.exports = {
     registerController,
     loginController,
     registervalidation,
     loginvalidation,
     getProfile,
-    adminDashboard
+    adminDashboard,
+    userHome
 };

@@ -7,6 +7,8 @@ import img2 from "./car2.png";
 import img3 from "./car3.png";
 import img4 from "./car4.png";
 import img5 from "./car5.png";
+import axios from "axios";
+import { useEffect } from "react";
 
 const CollectionCard = ({ image, title, price, id }) => {
   return (
@@ -21,6 +23,7 @@ const CollectionCard = ({ image, title, price, id }) => {
 
 function Home() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [user, setUser] = useState(null);
 
   const collectionItems = [
     { id: 0, image: img2, title: "VOLVO XC 90", price: "₹62,00,000" },
@@ -38,6 +41,28 @@ function Home() {
     item.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userName = localStorage.getItem("username");
+      console.log("Stored username:", userName); // Debugging log
+  
+      if (!userName) {
+        console.warn("No username found in localStorage");
+        return; // Stop execution if username is missing
+      }
+      console.log("Fetching user:", userName); // Confirm the value
+      try {
+        const res = await axios.get(`http://localhost:5000/user/${userName}`);
+        setUser(res.data);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+  
+    fetchUser();
+  }, []);
+  
+
   return (
     <>
       <title>Luxewheels - Where Elegance Meets The Road</title>
@@ -45,17 +70,26 @@ function Home() {
 
       <main>
         <section className="hero">
-          <h1>Where Elegance Meets The Road</h1>
-          <input
-            type="text"
-            className="search-bar"
-            placeholder="Tell us your dream..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <div className="car-showcase">
-            <img src={img1} alt="Luxury car showcase" className="car-image" />
-          </div>
+          {user ? (
+            <>
+              <h1>Welcome, {user.email}!</h1>
+              <p>Discover your dream luxury car.</p>
+            </>
+          ) : (
+            <>
+              <h1>Where Elegance Meets The Road</h1>
+              <input
+                type="text"
+                className="search-bar"
+                placeholder="Tell us your dream..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="car-showcase">
+                <img src={img1} alt="Luxury car showcase" className="car-image" />
+              </div>
+            </>
+          )}
         </section>
       </main>
 
