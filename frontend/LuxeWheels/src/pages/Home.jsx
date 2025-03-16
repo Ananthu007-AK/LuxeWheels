@@ -1,14 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./Home.css";
 import Navbar from "../components/Navbar";
 import img1 from "./car.png";
-import img2 from "./car2.png";
-import img3 from "./car3.png";
-import img4 from "./car4.png";
-import img5 from "./car5.png";
 import axios from "axios";
-import { useEffect } from "react";
 
 const CollectionCard = ({ image, title, price, id }) => {
   return (
@@ -23,45 +18,39 @@ const CollectionCard = ({ image, title, price, id }) => {
 
 function Home() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [user, setUser] = useState(null);
-
-  const collectionItems = [
-    { id: 0, image: img2, title: "VOLVO XC 90", price: "₹62,00,000" },
-    { id: 1, image: img3, title: "MUSTANG GT", price: "₹85,00,000" },
-    { id: 2, image: img4, title: "C43 AMG", price: "₹75,00,000" },
-    { id: 3, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
-    { id: 4, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
-    { id: 5, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
-    { id: 6, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
-    { id: 7, image: img5, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000" },
-    // Add more items as needed
-  ];
-
-  const filteredItems = collectionItems.filter(item =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [user, setUser ] = useState(null);
+  const [cars, setCars] = useState([]); // State to hold car data
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUser  = async () => {
       const userName = localStorage.getItem("username");
-      console.log("Stored username:", userName); // Debugging log
-  
-      if (!userName) {
-        console.warn("No username found in localStorage");
-        return; // Stop execution if username is missing
-      }
-      console.log("Fetching user:", userName); // Confirm the value
+      if (!userName) return;
+
       try {
         const res = await axios.get(`http://localhost:5000/user/${userName}`);
-        setUser(res.data);
+        setUser (res.data);
       } catch (error) {
         console.error("Error fetching user:", error);
       }
     };
-  
-    fetchUser();
+
+    const fetchCars = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/cars'); // Fetch car data
+        setCars(res.data); // Set car data to state
+      } catch (error) {
+        console.error("Error fetching cars:", error);
+      }
+    };
+
+    fetchUser ();
+    fetchCars(); // Call fetchCars when component mounts
   }, []);
-  
+
+  const filteredItems = cars.filter(car =>
+    car.make.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    car.model.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
@@ -96,13 +85,13 @@ function Home() {
       <section className="Collection">
         <h2>Our Collection</h2>
         <div className="collection-cards">
-          {filteredItems.map((item) => (
+          {filteredItems.map((car) => (
             <CollectionCard
-              key={item.id}
-              id={item.id}
-              image={item.image}
-              title={item.title}
-              price={item.price}
+              key={car.id}
+              id={car.id}
+              image={car.images[0] || img1} // Use the first image or a default image
+              title={`${car.make} ${car.model}`} // Combine make and model for title
+              price={`₹${Number(car.price).toLocaleString()}`} // Format price
             />
           ))}
         </div>
@@ -130,7 +119,7 @@ function Home() {
         </ul>
       </section>
 
-      <section className="testimonials">
+            <section className="testimonials">
         <h2>What Our Clients Say</h2>
         <div className="testimonial-card">
           <p>

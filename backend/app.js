@@ -15,13 +15,16 @@ const PORT=process.env.PORT || 3003
 
 app.use(cors())
 
+app.use('/uploads', express.static('uploads'));
+
+
 
 
 app.use('/user',userRoutes)
 
 app.use('/users',authRoutes)
 
-
+app.use('/cars',require('./routes/CarRoutes'))
 
 
 app.get('/',(req,res)=>{

@@ -172,3 +172,78 @@ footer {
         max-width: 90%;
     }
 }
+
+
+
+
+
+
+/* Navbar Styling */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Fix Login/Signup Alignment */
+.login-signup {
+    font-size: 1rem;
+    color: white;
+    /* background: #007bff; */
+    padding: 8px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+    display: inline-block;
+    text-align: center;
+}
+
+/* .login-signup:hover {
+    background: #0056b3;
+} */
+
+/* Profile Dropdown */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 10px;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.dropdown-menu a,
+.logout-btn {
+    padding: 10px;
+    text-align: left;
+    text-decoration: none;
+    color: #333;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+}
+
+.dropdown-menu a:hover,
+.logout-btn:hover {
+    background: #f1f1f1;
+}

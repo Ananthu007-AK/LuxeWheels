@@ -1,17 +1,18 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import "./Profile.css";
-import userPlaceholder from "./user-placeholder.png"; // Add a placeholder image to your project
+import userPlaceholder from "./user-placeholder.png";
+import axios from "axios";
 
 function Profile() {
   const [activeTab, setActiveTab] = useState("details");
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState({
-    name: "Alex Johnson",
-    email: "alex.johnson@example.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Luxury Lane, Beverly Hills, CA 90210",
-    preferredCars: ["Rolls Royce", "Mercedes-Benz AMG", "Ferrari"],
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
     profilePhoto: userPlaceholder
   });
   
@@ -27,10 +28,71 @@ function Profile() {
 
   const fileInputRef = useRef(null);
 
-  const handleEditToggle = () => {
+  // Fetch user data from backend
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        // Replace with your actual API endpoint
+        const response = await axios.get('http://localhost:5000/api/user/profile');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        
+        const data = await response.json();
+        
+        // Set user data with data from backend
+        setUserData({
+          name: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          profilePhoto: data.profilePhoto || userPlaceholder
+        });
+        
+        // Initialize form data with the same values
+        setFormData({
+          name: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          profilePhoto: data.profilePhoto || userPlaceholder
+        });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // You might want to show an error message to the user
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleEditToggle = async () => {
     if (isEditing) {
-      // Save the changes
-      setUserData({...formData});
+      try {
+        // Save the changes to backend
+        const response = await axios.put('http://localhost:5000/api/user/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update profile');
+        }
+        
+        // Update local state
+        setUserData({...formData});
+        alert("Profile updated successfully!");
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        alert("Failed to update profile. Please try again.");
+      }
     }
     setIsEditing(!isEditing);
   };
@@ -51,49 +113,95 @@ function Profile() {
     });
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
-    // Here you would typically send the password change request to your backend
-    alert("Password changed successfully!");
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: ""
-    });
+    
+    try {
+      // Send password change request to backend
+      const response = await axios.post('http://localhost:5000/api/user/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to change password');
+      }
+      
+      alert("Password changed successfully!");
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      alert("Failed to change password. Please try again.");
+    }
   };
 
   const handlePhotoClick = () => {
     fileInputRef.current.click();
   };
 
-  const handlePhotoChange = (e) => {
+  const handlePhotoChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
       const reader = new FileReader();
       
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
+        const newProfilePhoto = event.target.result;
+        
         setFormData({
           ...formData,
-          profilePhoto: event.target.result
+          profilePhoto: newProfilePhoto
         });
         
         // If not in editing mode, immediately update the profile photo
         if (!isEditing) {
-          setUserData({
-            ...userData,
-            profilePhoto: event.target.result
-          });
+          try {
+            // Create a FormData object to send the file
+            const formData = new FormData();
+            formData.append('profilePhoto', file);
+            
+            const response = await axios.post('http://localhost:5000/api/user/profile-photo', {
+              method: 'POST',
+              body: formData
+            });
+            
+            if (!response.ok) {
+              throw new Error('Failed to update profile photo');
+            }
+            
+            setUserData({
+              ...userData,
+              profilePhoto: newProfilePhoto
+            });
+          } catch (error) {
+            console.error("Error updating profile photo:", error);
+            alert("Failed to update profile photo. Please try again.");
+          }
         }
       };
       
-      reader.readAsDataURL(e.target.files[0]);
+      reader.readAsDataURL(file);
     }
   };
 
   const renderUserDetails = () => {
+    if (isLoading) {
+      return <div className="profile-loading">Loading user data...</div>;
+    }
+    
     if (isEditing) {
       return (
         <form className="profile-edit-form">
@@ -136,22 +244,6 @@ function Profile() {
               onChange={handleInputChange}
             ></textarea>
           </div>
-          <div className="profile-form-group">
-            <label htmlFor="preferredCars">Preferred Cars (comma-separated)</label>
-            <input
-              type="text"
-              id="preferredCars"
-              name="preferredCars"
-              value={formData.preferredCars.join(", ")}
-              onChange={(e) => {
-                const carsArray = e.target.value.split(",").map(car => car.trim());
-                setFormData({
-                  ...formData,
-                  preferredCars: carsArray
-                });
-              }}
-            />
-          </div>
         </form>
       );
     }
@@ -174,19 +266,15 @@ function Profile() {
           <span className="profile-detail-label">Address:</span>
           <span className="profile-detail-value">{userData.address}</span>
         </div>
-        <div className="profile-detail-item">
-          <span className="profile-detail-label">Preferred Cars:</span>
-          <ul className="profile-cars-list">
-            {userData.preferredCars.map((car, index) => (
-              <li key={index} className="profile-car-item">{car}</li>
-            ))}
-          </ul>
-        </div>
       </div>
     );
   };
 
   const renderPasswordChange = () => {
+    if (isLoading) {
+      return <div className="profile-loading">Loading user data...</div>;
+    }
+    
     return (
       <form className="profile-password-form" onSubmit={handlePasswordSubmit}>
         <div className="profile-form-group">
@@ -237,7 +325,7 @@ function Profile() {
       <div className="profile-container">
         <div className="profile-header">
           <h1>My Profile</h1>
-          <p className="profile-subtitle">Manage your account details and preferences</p>
+          <p className="profile-subtitle">Manage your account details</p>
         </div>
 
         <div className="profile-content">
@@ -262,8 +350,12 @@ function Profile() {
                   className="profile-avatar-input"
                 />
               </div>
-              <h2 className="profile-name">{userData.name}</h2>
-              <p className="profile-email">{userData.email}</p>
+              {!isLoading && (
+                <>
+                  <h2 className="profile-name">{userData.name}</h2>
+                  <p className="profile-email">{userData.email}</p>
+                </>
+              )}
             </div>
             <div className="profile-navigation">
               <button 
@@ -278,18 +370,6 @@ function Profile() {
               >
                 Change Password
               </button>
-              <button 
-                className={`profile-nav-item ${activeTab === "preferences" ? "active" : ""}`}
-                onClick={() => setActiveTab("preferences")}
-              >
-                Car Preferences
-              </button>
-              <button 
-                className={`profile-nav-item ${activeTab === "orders" ? "active" : ""}`}
-                onClick={() => setActiveTab("orders")}
-              >
-                Order History
-              </button>
             </div>
           </div>
 
@@ -298,12 +378,14 @@ function Profile() {
               <div className="profile-section">
                 <div className="profile-section-header">
                   <h2>Personal Details</h2>
-                  <button 
-                    className="profile-edit-btn"
-                    onClick={handleEditToggle}
-                  >
-                    {isEditing ? "Save Changes" : "Edit Details"}
-                  </button>
+                  {!isLoading && (
+                    <button 
+                      className="profile-edit-btn"
+                      onClick={handleEditToggle}
+                    >
+                      {isEditing ? "Save Changes" : "Edit Details"}
+                    </button>
+                  )}
                 </div>
                 {renderUserDetails()}
               </div>
@@ -315,28 +397,6 @@ function Profile() {
                   <h2>Change Password</h2>
                 </div>
                 {renderPasswordChange()}
-              </div>
-            )}
-
-            {activeTab === "preferences" && (
-              <div className="profile-section">
-                <div className="profile-section-header">
-                  <h2>Car Preferences</h2>
-                </div>
-                <div className="profile-preferences-container">
-                  <p className="profile-placeholder-text">Your car preferences will be shown here.</p>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "orders" && (
-              <div className="profile-section">
-                <div className="profile-section-header">
-                  <h2>Order History</h2>
-                </div>
-                <div className="profile-orders-container">
-                  <p className="profile-placeholder-text">Your order history will be shown here.</p>
-                </div>
               </div>
             )}
           </div>
