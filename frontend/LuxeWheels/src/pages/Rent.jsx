@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Rent.css';
 import Navbar from '../components/Navbar';
-import porsche911GTS from './images/Porsche 911 GT3.jpg';
-import car2 from './car2.png';
-import car4 from './car4.png';
-import car5 from './car5.png';
-import Ferrari from './images/Ferrari Roma.jpg';
-import Aston from './images/Aston Martin.jpg';
-import car3 from './car3.png';
-import Range from './images/Range Rover.jpeg';
+import axios from 'axios';
 
 const RentPage = () => {
   const [selectedCar, setSelectedCar] = useState(null);
@@ -22,121 +15,56 @@ const RentPage = () => {
     pickupDate: '',
     returnDate: ''
   });
+  const [luxuryCars, setLuxuryCars] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const luxuryCars = [
-    {
-      id: 1,
-      name: 'Porsche 911 GTS',
-      category: 'Sports',
-      price: 899,
-      image: porsche911GTS,
-      description: 'Experience the thrill of German engineering with this iconic sports car.',
-      specs: {
-        engine: '3.0L Twin-Turbo Flat-6',
-        horsepower: '473 hp',
-        acceleration: '0-60 mph in 3.1s',
-        topSpeed: '193 mph'
-      }
-    },
-    {
-      id: 2,
-      name: 'VOLVO XC 90',
-      category: 'Supercar',
-      price: 1499,
-      image: car2,
-      description: 'Turn heads with this stunning Italian masterpiece.',
-      specs: {
-        engine: '5.2L V10',
-        horsepower: '631 hp',
-        acceleration: '0-60 mph in 2.9s',
-        topSpeed: '202 mph'
-      }
-    },
-    {
-      id: 3,
-      name: 'C43 AMG',
-      category: 'Luxury',
-      price: 1199,
-      image: car4,
-      description: 'Ultimate luxury and comfort with incredible performance.',
-      specs: {
-        engine: '6.0L W12',
-        horsepower: '626 hp',
-        acceleration: '0-60 mph in 3.6s',
-        topSpeed: '207 mph'
-      }
-    },
-    {
-      id: 4,
-      name: 'Rolls-Royce Ghost',
-      category: 'Ultra Luxury',
-      price: 1899,
-      image: car5,
-      description: 'The pinnacle of luxury automotive craftsmanship.',
-      specs: {
-        engine: '6.75L Twin-Turbo V12',
-        horsepower: '563 hp',
-        acceleration: '0-60 mph in 4.6s',
-        topSpeed: '155 mph (limited)'
-      }
-    },
-    {
-      id: 5,
-      name: 'Ferrari Roma',
-      category: 'Sports',
-      price: 1299,
-      image: Ferrari,
-      description: 'Italian elegance meets racing heritage.',
-      specs: {
-        engine: '3.9L Twin-Turbo V8',
-        horsepower: '612 hp',
-        acceleration: '0-60 mph in 3.4s',
-        topSpeed: '199 mph'
-      }
-    },
-    {
-      id: 6,
-      name: 'Aston Martin DB11',
-      category: 'Grand Tourer',
-      price: 1099,
-      image: Aston,
-      description: 'British elegance with a powerful presence.',
-      specs: {
-        engine: '4.0L Twin-Turbo V8',
-        horsepower: '528 hp',
-        acceleration: '0-60 mph in 3.9s',
-        topSpeed: '187 mph'
-      }
-    },
-    {
-      id: 7,
-      name: 'MUSTANG GT',
-      category: 'Grand Tourer',
-      price: 1099,
-      image: car3,
-      description: ' A performance-focused coupe with a classic American muscle car design.',
-      specs: {
-        engine: '4.0L Twin-Turbo V8',
-        horsepower: '528 hp',
-        acceleration: '0-60 mph in 3.9s',
-        topSpeed: '187 mph'
-      }
-    },
-    {
-      id: 8,
-      name: 'RANGE ROVER SPORT',
-      category: 'Grand Tourer',
-      price: 1099,
-      image: Range,
-      description: 'Performance-focused SUV known for its assertive power, responsive handling, and luxurious interior.',
-      specs: {
-        engine: '4.0L Twin-Turbo V8',
-        horsepower: '528 hp',
-        acceleration: '0-60 mph in 3.9s',
-        topSpeed: '187 mph'
-      }
+  // Fetch cars from backend when component mounts
+  useEffect(() => {
+    fetchCars();
+  }, []);
+
+  const fetchCars = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/cars');
+      // Map the backend data to match the expected structure
+      const formattedCars = response.data.map(car => ({
+        key: car.id,
+        id: car.id,
+        name: `${car.make} ${car.model}`,
+        category: determineCategory(car), // You might need a function to determine this
+        price: parseFloat(car.price),
+        image: car.images && car.images.length > 0 ? car.images[0] : null, // Use first image
+        description: `Experience luxury with this ${car.make} ${car.model}.`, // Customize as needed
+        specs: {
+          engine: car.engine || 'N/A', // Add these fields to your backend if needed
+          horsepower: car.horsepower || 'N/A',
+          acceleration: car.acceleration || 'N/A',
+          topSpeed: car.topSpeed || 'N/A'
+        }
+      }));
+      console.log('Luxury cars:', formattedCars);
+      
+      setLuxuryCars(formattedCars);
+    } catch (error) {
+      console.error('Error fetching cars:', error);
+      setLuxuryCars([]); // Fallback to empty array if fetch fails
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  // Helper function to determine car category (customize based on your logic)
+  const determineCategory = (car) => {
+    const make = car.make.toLowerCase();
+    if (['porsche', 'ferrari'].includes(make)) return 'Sports';
+    if (['rolls-royce'].includes(make)) return 'Ultra Luxury';
+    if (['aston martin', 'mustang'].includes(make)) return 'Grand Tourer';
+    if (['range rover'].includes(make)) return 'Grand Tourer'; // Or 'SUV'
+    if (['volvo'].includes(make)) return 'Supercar'; // Adjust as needed
+    if (['mercedes', 'c43 amg'].includes(make)) return 'Luxury';
+    return 'Luxury'; // Default category
+  };
 
   const filteredCars = luxuryCars.filter(car => {
     const matchesSearch = car.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -162,7 +90,6 @@ const RentPage = () => {
 
   const handleOpenBookingForm = () => {
     setShowBookingForm(true);
-    // Initialize form with any existing date range data
     setFormData(prevData => ({
       ...prevData,
       pickupDate: dateRange.start,
@@ -174,18 +101,37 @@ const RentPage = () => {
     setShowBookingForm(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Rental request submitted for ${selectedCar.name} from ${formData.pickupDate} to ${formData.returnDate}`);
-    setShowBookingForm(false);
-    // Here you would typically handle the form submission to your backend
+    setIsLoading(true); // Add this to state if not already present
+    try {
+      const rentalData = {
+        carId: selectedCar.id,
+        ...formData
+      };
+      const response = await axios.post('http://localhost:5000/rentals', rentalData);
+      alert(response.data.message); // Use backend success message
+      setFormData({
+        name: '',
+        phone: '',
+        email: '',
+        pickupDate: '',
+        returnDate: '',
+        specialRequests: ''
+      });
+      setShowBookingForm(false);
+    } catch (error) {
+      console.error('Error submitting rental:', error);
+      alert(error.response?.data?.message || 'Failed to submit rental request. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="rental-page-container">
       <Navbar />
       
-      {/* Conditional rendering of showcase banner */}
       {!selectedCar && (
         <div className="showcase-banner">
           <h1 className="showcase-heading">Luxury Car Rentals</h1>
@@ -202,7 +148,9 @@ const RentPage = () => {
         </div>
       )}
 
-      {selectedCar ? (
+      {isLoading ? (
+        <div className="loading">Loading cars...</div>
+      ) : selectedCar ? (
         <div className="vehicle-details-wrapper">
           <div className="navigation-back">
             <button className="back-button" onClick={() => setSelectedCar(null)}>← Back to all cars</button>
@@ -254,19 +202,23 @@ const RentPage = () => {
       ) : (
         <div className="vehicle-catalog">
           <div className="vehicle-grid">
-            {filteredCars.map(car => (
-              <div key={car.id} className="vehicle-tile" onClick={() => handleCarSelect(car)}>
-                <div className="vehicle-thumbnail">
-                  <img src={car.image} alt={car.name} />
+            {filteredCars.length === 0 ? (
+              <p>No cars match your search.</p>
+            ) : (
+              filteredCars.map(car => (
+                <div key={car.id} className="vehicle-tile" onClick={() => handleCarSelect(car)}>
+                  <div className="vehicle-thumbnail">
+                    <img src={car.image} alt={car.name} />
+                  </div>
+                  <div className="vehicle-info-brief">
+                    <h3 className="vehicle-title">{car.name}</h3>
+                    <p className="vehicle-category">{car.category}</p>
+                    <p className="vehicle-rate">${car.price} <span className="rate-period">per day</span></p>
+                    <button className="details-button">View Details</button>
+                  </div>
                 </div>
-                <div className="vehicle-info-brief">
-                  <h3 className="vehicle-title">{car.name}</h3>
-                  <p className="vehicle-category">{car.category}</p>
-                  <p className="vehicle-rate">${car.price} <span className="rate-period">per day</span></p>
-                  <button className="details-button">View Details</button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}

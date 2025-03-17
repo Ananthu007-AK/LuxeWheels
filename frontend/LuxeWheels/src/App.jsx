@@ -27,7 +27,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/car/:id" element={<CarDetails />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} /> {/* Add this route */}
+        <Route path="/resetpassword/:token" element={<ResetPassword />} /> 
       </Routes>
     </>
   );

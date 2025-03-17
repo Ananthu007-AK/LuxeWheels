@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import axios from 'axios';
 
@@ -17,62 +17,90 @@ function Admin() {
     fuelType: 'petrol'
   });
 
-  const [userListings, setUserListings] = useState([
-    { 
-      id: 1, 
-      userId: 1,
-      userName: 'John Doe', 
-      make: 'Toyota', 
-      model: 'Camry', 
-      year: '2022', 
-      price: '25000',
-      images: [],
-      transmission: 'automatic',
-      kmDriven: '30000',
-      colour: 'Silver',
-      owners: '1',
-      fuelType: 'petrol',
-      status: 'pending' 
-    },
-    { 
-      id: 2, 
-      userId: 2,
-      userName: 'Jane Smith', 
-      make: 'Honda', 
-      model: 'Civic', 
-      year: '2021', 
-      price: '22000',
-      images: [],
-      transmission: 'manual',
-      kmDriven: '45000',
-      colour: 'Blue',
-      owners: '2',
-      fuelType: 'petrol',
-      status: 'pending' 
-    }
-  ]);
-
-  const [enquiries, setEnquiries] = useState([
-    { id: 1, user: 'Mike Johnson', car: 'BMW X5', message: 'Is this still available?', date: '2025-03-15' }
-  ]);
-
-  const [rentals, setRentals] = useState([
-    { id: 1, car: 'Mercedes S-Class 2023', renter: 'Sarah Williams', startDate: '2025-03-14', endDate: '2025-03-21', status: 'active' },
-    { id: 2, car: 'Tesla Model 3 2022', renter: 'James Brown', startDate: '2025-03-15', endDate: '2025-03-18', status: 'active' }
-  ]);
-
-  const [cars, setCars] = useState([
-    { id: 1, make: 'Porsche', model: '911', year: '2023', price: '128500', status: 'available', images: [], transmission: 'automatic', kmDriven: '5000', colour: 'Black', owners: '1', fuelType: 'petrol' },
-    { id: 2, make: 'Ferrari', model: 'F8', year: '2022', price: '315000', status: 'reserved', images: [], transmission: 'automatic', kmDriven: '12000', colour: 'Red', owners: '2', fuelType: 'petrol' }
-  ]);
-
-  const [users, setUsers] = useState([
-    { id: 1, name: 'John Doe', email: 'john@example.com', registered: '2025-01-15', status: 'active' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', registered: '2025-02-01', status: 'active' },
-    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', registered: '2025-02-20', status: 'active' }
-  ]);
-
+  const [userListings, setUserListings] = useState([]);
+  const [enquiries, setEnquiries] = useState([]);
+  const [rentals, setRentals] = useState([]);
+  const [cars, setCars] = useState([]);
+  const [users, setUsers] = useState([]);
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch data when component mounts
+  useEffect(() => {
+    fetchCars();
+    fetchUserListings();
+    fetchEnquiries();
+    fetchRentals();
+    fetchUsers();
+  }, []);
+
+  // Fetch cars from backend
+  const fetchCars = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/cars');
+      setCars(response.data);
+    } catch (error) {
+      console.error('Error fetching cars:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch user listings from backend
+  const fetchUserListings = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/listings/pending');
+      setUserListings(response.data);
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+    }
+  };
+
+  // Fetch enquiries from backend
+  const fetchEnquiries = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/enquiries');
+      setEnquiries(response.data);
+    } catch (error) {
+      console.error('Error fetching enquiries:', error);
+      // Fallback to sample data if API fails
+      setEnquiries([
+        { id: 1, user: 'Mike Johnson', car: 'BMW X5', message: 'Is this still available?', date: '2025-03-15' }
+      ]);
+    }
+  };
+
+  // Fetch rentals from backend
+  const fetchRentals = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/rentals');
+      setRentals(response.data);
+    } catch (error) {
+      console.error('Error fetching rentals:', error);
+      // Fallback to sample data if API fails
+      setRentals([
+        { id: 1, car: 'Mercedes S-Class 2023', renter: 'Sarah Williams', startDate: '2025-03-14', endDate: '2025-03-21', status: 'active' },
+        { id: 2, car: 'Tesla Model 3 2022', renter: 'James Brown', startDate: '2025-03-15', endDate: '2025-03-18', status: 'active' }
+      ]);
+    }
+  };
+
+  // Fetch users from backend
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/users');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      // Fallback to sample data if API fails
+      setUsers([
+        { id: 1, name: 'John Doe', email: 'john@example.com', registered: '2025-01-15', status: 'active' },
+        { id: 2, name: 'Jane Smith', email: 'jane@example.com', registered: '2025-02-01', status: 'active' },
+        { id: 3, name: 'Mike Johnson', email: 'mike@example.com', registered: '2025-02-20', status: 'active' }
+      ]);
+    }
+  };
 
   const handleAddCar = async (e) => {
     e.preventDefault();
@@ -90,9 +118,23 @@ function Admin() {
     formData.append('fuelType', newCar.fuelType);
   
     // Append images to formData
-    newCar.images.forEach(image => {
-      formData.append('images', image); // Append each image file
-    });
+    for (let i = 0; i < newCar.images.length; i++) {
+      // Check if image is a File object or a URL string
+      if (newCar.images[i] instanceof File) {
+        formData.append('images', newCar.images[i]);
+      } else if (typeof newCar.images[i] === 'string') {
+        // If it's a URL, you might need to fetch and convert it to a File
+        // This is simplified - you may need a more robust solution
+        try {
+          const response = await fetch(newCar.images[i]);
+          const blob = await response.blob();
+          const file = new File([blob], `image-${i}.jpg`, { type: blob.type });
+          formData.append('images', file);
+        } catch (error) {
+          console.error('Error converting image URL to file:', error);
+        }
+      }
+    }
   
     try {
       const response = await axios.post('http://localhost:5000/cars/add', formData, {
@@ -101,8 +143,23 @@ function Admin() {
         }
       });
       console.log(response.data);
-      setCars([...cars, response.data.car]); // Update local state with the new car
-      setNewCar({ /* reset newCar state */ });
+      // Update local state with the new car
+      setCars([...cars, response.data.car]);
+      // Reset form
+      setNewCar({
+        make: '',
+        model: '',
+        year: '',
+        price: '',
+        status: 'available',
+        images: [],
+        transmission: 'automatic',
+        kmDriven: '',
+        colour: '',
+        owners: '',
+        fuelType: 'petrol'
+      });
+      // Navigate to dashboard
       setActiveSection('dashboard');
     } catch (error) {
       console.error('Error adding car:', error);
@@ -131,8 +188,8 @@ function Admin() {
       return true;
     });
 
-    const newImages = validImages.map(file => URL.createObjectURL(file));
-    setNewCar({ ...newCar, images: [...newCar.images, ...newImages] });
+    // Keep the File objects for upload
+    setNewCar({ ...newCar, images: [...newCar.images, ...validImages] });
   };
 
   const removeImage = (index) => {
@@ -140,40 +197,68 @@ function Admin() {
     setNewCar({ ...newCar, images: updatedImages });
   };
 
-  const verifyListing = (id) => {
-    const listing = userListings.find(l => l.id === id);
-    if (listing) {
-      const approvedCar = {
-        id: cars.length + 1,
-        make: listing.make,
-        model: listing.model,
-        year: listing.year,
-        price: listing.price,
-        status: 'available',
-        images: listing.images,
-        transmission: listing.transmission,
-        kmDriven: listing.kmDriven,
-        colour: listing.colour,
-        owners: listing.owners,
-        fuelType: listing.fuelType
-      };
-      setCars([...cars, approvedCar]);
+  const verifyListing = async (id) => {
+    try {
+      const response = await axios.patch(`http://localhost:5000/listings/${id}/approve`);
+      if (response.data.success) {
+        // Refresh both lists
+        fetchUserListings();
+        fetchCars();
+      }
+    } catch (error) {
+      console.error('Error approving listing:', error);
+      // Fallback to client-side update if API fails
+      const listing = userListings.find(l => l.id === id);
+      if (listing) {
+        const approvedCar = {
+          id: Date.now(), // Temporary ID
+          make: listing.make,
+          model: listing.model,
+          year: listing.year,
+          price: listing.price,
+          status: 'available',
+          images: listing.images,
+          transmission: listing.transmission,
+          kmDriven: listing.kmDriven,
+          colour: listing.colour,
+          owners: listing.owners,
+          fuelType: listing.fuelType
+        };
+        setCars([...cars, approvedCar]);
+        setUserListings(userListings.filter(l => l.id !== id));
+      }
+    }
+  };
+
+  const rejectListing = async (id) => {
+    try {
+      await axios.patch(`http://localhost:5000/listings/${id}/reject`);
+      // Refresh listings
+      fetchUserListings();
+    } catch (error) {
+      console.error('Error rejecting listing:', error);
+      // Fallback to client-side update if API fails
       setUserListings(userListings.filter(l => l.id !== id));
     }
   };
 
-  const rejectListing = (id) => {
-    setUserListings(userListings.filter(l => l.id !== id));
-  };
-
-  const completeRental = (id) => {
-    setRentals(rentals.map(rental =>
-      rental.id === id ? { ...rental, status: 'completed' } : rental
-    ));
+  const completeRental = async (id) => {
+    try {
+      await axios.patch(`http://localhost:5000/rentals/${id}/complete`);
+      // Refresh rentals
+      fetchRentals();
+    } catch (error) {
+      console.error('Error completing rental:', error);
+      // Fallback to client-side update if API fails
+      setRentals(rentals.map(rental =>
+        rental.id === id ? { ...rental, status: 'completed' } : rental
+      ));
+    }
   };
 
   const handleLogout = () => {
     console.log('Logging out...');
+    // Add your logout logic here, e.g., clear tokens, redirect, etc.
     alert('You have been logged out');
     setActiveSection('dashboard');
   };
@@ -184,59 +269,65 @@ function Admin() {
         return (
           <section className="admin-section-card">
             <h2>Car Listings</h2>
-            <table className="admin-data-table">
-              <thead>
-                <tr>
-                  <th>Images</th>
-                  <th>Make</th>
-                  <th>Model</th>
-                  <th>Year</th>
-                  <th>Price</th>
-                  <th>Trans</th>
-                  <th>KM</th>
-                  <th>Colour</th>
-                  <th>Owners</th>
-                  <th>Fuel</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cars.map(car => (
-                  <tr key={car.id}>
-                    <td>
-                      {car.images.length > 0 ? (
-                        <div className="admin-image-preview-container">
-                          {car.images.map((img, index) => (
-                            <img 
-                              key={index}
-                              src={img} 
-                              alt={`${car.make} ${car.model} ${index + 1}`} 
-                              className="admin-car-image" 
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        'No Images'
-                      )}
-                    </td>
-                    <td>{car.make}</td>
-                    <td>{car.model}</td>
-                    <td>{car.year}</td>
-                    <td>${Number(car.price).toLocaleString()}</td>
-                    <td>{car.transmission}</td>
-                    <td>{Number(car.kmDriven).toLocaleString()}</td>
-                    <td>{car.colour}</td>
-                    <td>{car.owners}</td>
-                    <td>{car.fuelType}</td>
-                    <td>
-                      <span className={`admin-rental-status admin-status-${car.status}`}>
-                        {car.status}
-                      </span>
-                    </td>
+            {isLoading ? (
+              <div className="admin-loading">Loading cars...</div>
+            ) : cars.length === 0 ? (
+              <div className="admin-empty-state">No cars available. Add new cars to get started.</div>
+            ) : (
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Images</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Year</th>
+                    <th>Price</th>
+                    <th>Trans</th>
+                    <th>KM</th>
+                    <th>Colour</th>
+                    <th>Owners</th>
+                    <th>Fuel</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {cars.map(car => (
+                    <tr key={car.id}>
+                      <td>
+                        {car.images && car.images.length > 0 ? (
+                          <div className="admin-image-preview-container">
+                            {car.images.map((img, index) => (
+                              <img 
+                                key={index}
+                                src={img} 
+                                alt={`${car.make} ${car.model} ${index + 1}`} 
+                                className="admin-car-image" 
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          'No Images'
+                        )}
+                      </td>
+                      <td>{car.make}</td>
+                      <td>{car.model}</td>
+                      <td>{car.year}</td>
+                      <td>${Number(car.price).toLocaleString()}</td>
+                      <td>{car.transmission}</td>
+                      <td>{Number(car.kmDriven).toLocaleString()}</td>
+                      <td>{car.colour}</td>
+                      <td>{car.owners}</td>
+                      <td>{car.fuelType}</td>
+                      <td>
+                        <span className={`admin-rental-status admin-status-${car.status}`}>
+                          {car.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </section>
         );
       case 'addCar':
@@ -251,6 +342,7 @@ function Admin() {
                   value={newCar.make}
                   onChange={(e) => setNewCar({ ...newCar, make: e.target.value })}
                   className="admin-input-field"
+                  required
                 />
                 <input
                   type="text"
@@ -258,6 +350,7 @@ function Admin() {
                   value={newCar.model}
                   onChange={(e) => setNewCar({ ...newCar, model: e.target.value })}
                   className="admin-input-field"
+                  required
                 />
                 <input
                   type="number"
@@ -265,6 +358,7 @@ function Admin() {
                   value={newCar.year}
                   onChange={(e) => setNewCar({ ...newCar, year: e.target.value })}
                   className="admin-input-field"
+                  required
                 />
               </div>
               <div className="admin-form-row">
@@ -274,6 +368,7 @@ function Admin() {
                   value={newCar.price}
                   onChange={(e) => setNewCar({ ...newCar, price: e.target.value })}
                   className="admin-input-field"
+                  required
                 />
                 <select
                   value={newCar.transmission}
@@ -289,6 +384,7 @@ function Admin() {
                   value={newCar.kmDriven}
                   onChange={(e) => setNewCar({ ...newCar, kmDriven: e.target.value })}
                   className="admin-input-field"
+                  required
                 />
               </div>
               <div className="admin-form-row">
@@ -298,6 +394,7 @@ function Admin() {
                   value={newCar.colour}
                   onChange={(e) => setNewCar({ ...newCar, colour: e.target.value })}
                   className="admin-input-field"
+                  required
                 />
                 <input
                   type="number"
@@ -305,6 +402,7 @@ function Admin() {
                   value={newCar.owners}
                   onChange={(e) => setNewCar({ ...newCar, owners: e.target.value })}
                   className="admin-input-field"
+                  required
                 />
                 <select
                   value={newCar.fuelType}
@@ -332,7 +430,7 @@ function Admin() {
                       {newCar.images.map((img, index) => (
                         <div key={index} className="admin-image-preview-item">
                           <img 
-                            src={img} 
+                            src={img instanceof File ? URL.createObjectURL(img) : img} 
                             alt={`Preview ${index + 1}`} 
                             className="admin-car-image" 
                           />
@@ -359,152 +457,172 @@ function Admin() {
         return (
           <section className="admin-section-card">
             <h2>User Submitted Listings</h2>
-            <table className="admin-data-table">
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Make</th>
-                  <th>Model</th>
-                  <th>Year</th>
-                  <th>Price</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userListings.map(listing => (
-                  <tr key={listing.id}>
-                    <td>{listing.userName}</td>
-                    <td>{listing.make}</td>
-                    <td>{listing.model}</td>
-                    <td>{listing.year}</td>
-                    <td>${Number(listing.price).toLocaleString()}</td>
-                    <td>
-                      <span className={`admin-rental-status admin-status-${listing.status}`}>
-                        {listing.status}
-                      </span>
-                    </td>
-                    <td>
-                      {listing.status === 'pending' && (
-                        <div className="admin-action-buttons">
-                          <button 
-                            onClick={() => verifyListing(listing.id)}
-                            className="admin-action-btn admin-approve-btn"
-                          >
-                            Approve
-                          </button>
-                          <button 
-                            onClick={() => rejectListing(listing.id)}
-                            className="admin-action-btn admin-reject-btn"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
-                    </td>
+            {userListings.length === 0 ? (
+              <div className="admin-empty-state">No pending user listings.</div>
+            ) : (
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Year</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {userListings.map(listing => (
+                    <tr key={listing.id}>
+                      <td>{listing.userName}</td>
+                      <td>{listing.make}</td>
+                      <td>{listing.model}</td>
+                      <td>{listing.year}</td>
+                      <td>${Number(listing.price).toLocaleString()}</td>
+                      <td>
+                        <span className={`admin-rental-status admin-status-${listing.status}`}>
+                          {listing.status}
+                        </span>
+                      </td>
+                      <td>
+                        {listing.status === 'pending' && (
+                          <div className="admin-action-buttons">
+                            <button 
+                              onClick={() => verifyListing(listing.id)}
+                              className="admin-action-btn admin-approve-btn"
+                            >
+                              Approve
+                            </button>
+                            <button 
+                              onClick={() => rejectListing(listing.id)}
+                              className="admin-action-btn admin-reject-btn"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </section>
         );
       case 'enquiries':
         return (
           <section className="admin-section-card">
             <h2>Buying Enquiries</h2>
-            <table className="admin-data-table">
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Car</th>
-                  <th>Message</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {enquiries.map(enquiry => (
-                  <tr key={enquiry.id}>
-                    <td>{enquiry.user}</td>
-                    <td>{enquiry.car}</td>
-                    <td>{enquiry.message}</td>
-                    <td>{enquiry.date}</td>
+            {enquiries.length === 0 ? (
+              <div className="admin-empty-state">No enquiries yet.</div>
+            ) : (
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Car</th>
+                    <th>Message</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {enquiries.map(enquiry => (
+                    <tr key={enquiry.id}>
+                      <td>{enquiry.user}</td>
+                      <td>{enquiry.car}</td>
+                      <td>{enquiry.message}</td>
+                      <td>{enquiry.email}</td>
+                      <td>{enquiry.phone}</td>
+                      <td>{enquiry.date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </section>
         );
       case 'rentals':
         return (
           <section className="admin-section-card">
             <h2>Active Rentals</h2>
-            <table className="admin-data-table">
-              <thead>
-                <tr>
-                  <th>Car</th>
-                  <th>Renter</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rentals.map(rental => (
-                  <tr key={rental.id}>
-                    <td>{rental.car}</td>
-                    <td>{rental.renter}</td>
-                    <td>{rental.startDate}</td>
-                    <td>{rental.endDate}</td>
-                    <td>
-                      <span className={`admin-rental-status admin-status-${rental.status}`}>
-                        {rental.status}
-                      </span>
-                    </td>
-                    <td>
-                      {rental.status === 'active' && (
-                        <button 
-                          onClick={() => completeRental(rental.id)}
-                          className="admin-action-btn"
-                        >
-                          Mark Completed
-                        </button>
-                      )}
-                    </td>
+            {rentals.length === 0 ? (
+              <div className="admin-empty-state">No active rentals.</div>
+            ) : (
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Car</th>
+                    <th>Renter</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rentals.map(rental => (
+                    <tr key={rental.id}>
+                      <td>{rental.car}</td>
+                      <td>{rental.renter}</td>
+                      <td>{rental.startDate}</td>
+                      <td>{rental.endDate}</td>
+                      <td>
+                        <span className={`admin-rental-status admin-status-${rental.status}`}>
+                          {rental.status}
+                        </span>
+                      </td>
+                      <td>
+                        {rental.status === 'active' && (
+                          <button 
+                            onClick={() => completeRental(rental.id)}
+                            className="admin-action-btn"
+                          >
+                            Mark Completed
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </section>
         );
       case 'users':
         return (
           <section className="admin-section-card">
             <h2>Registered Users</h2>
-            <table className="admin-data-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Registered Date</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map(user => (
-                  <tr key={user.id}>
-                    <td>{user.name}</td>
-                    <td>{user.email}</td>
-                    <td>{user.registered}</td>
-                    <td>
-                      <span className={`admin-rental-status admin-status-${user.status}`}>
-                        {user.status}
-                      </span>
-                    </td>
+            {users.length === 0 ? (
+              <div className="admin-empty-state">No users registered yet.</div>
+            ) : (
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Registered Date</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.map(user => (
+                    <tr key={user.id}>
+                      <td>{user.name}</td>
+                      <td>{user.email}</td>
+                      <td>{user.registered}</td>
+                      <td>
+                        <span className={`admin-rental-status admin-status-${user.status}`}>
+                          {user.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </section>
         );
       default:

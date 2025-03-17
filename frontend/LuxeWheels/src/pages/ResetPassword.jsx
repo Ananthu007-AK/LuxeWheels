@@ -11,7 +11,7 @@ function ResetPassword() {
         e.preventDefault();
 
         try {
-            const response = await axios.post(`http://localhost:5000/users/reset-password/${token}`, { newPassword });
+            const response = await axios.post(`http://localhost:5000/users/resetpassword/${token}`, { newPassword });
             alert(response.data.msg);
             navigate("/login");
         } catch (error) {

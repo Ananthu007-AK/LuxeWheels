@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "./Buy.css";
-import img2 from "./car.png";
-import img3 from "./car2.png";
-import img4 from "./car3.png";
-import img5 from "./car4.png";
-import img6 from "./car5.png";
+import axios from 'axios';
+import defaultCarImage from "./car.png";
 
 function Buy() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showEnquiryForm, setShowEnquiryForm] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
+  const [cars, setCars] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [enquiryData, setEnquiryData] = useState({
     name: "",
     email: "",
@@ -19,26 +19,32 @@ function Buy() {
     message: ""
   });
 
-  const carCollection = [
-    { id: 1, image: img3, title: "VOLVO XC 90", price: "₹62,00,000", year: "2023", mileage: "0 km", engine: "2.0L Turbocharged", transmission: "Automatic" },
-    { id: 2, image: img4, title: "MUSTANG GT", price: "₹85,00,000", year: "2023", mileage: "0 km", engine: "5.0L V8", transmission: "Manual" },
-    { id: 3, image: img5, title: "C43 AMG", price: "₹75,00,000", year: "2022", mileage: "1,200 km", engine: "3.0L Biturbo V6", transmission: "Automatic" },
-    { id: 4, image: img6, title: "ROLLS ROYCE GHOST SERIES", price: "₹2,60,00,000", year: "2023", mileage: "0 km", engine: "6.75L Twin-Turbo V12", transmission: "Automatic" },
-    { id: 5, image: img6, title: "BENTLEY CONTINENTAL GT", price: "₹1,90,00,000", year: "2022", mileage: "500 km", engine: "6.0L W12", transmission: "Automatic" },
-    { id: 6, image: img3, title: "FERRARI 488 GTB", price: "₹3,50,00,000", year: "2023", mileage: "0 km", engine: "3.9L Twin-Turbo V8", transmission: "Automatic" },
-  ];
+  useEffect(() => {
+    fetchCars();
+  }, []);
 
-  const filteredCars = carCollection.filter((car) =>
-    car.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const fetchCars = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/cars');
+      setCars(response.data);
+    } catch (error) {
+      console.error('Error fetching cars:', error);
+      setCars([
+        { _id: "1", make: "VOLVO", model: "XC 90", price: "6200000", year: "2023", kmDriven: "0", transmission: "Automatic", images: [defaultCarImage] },
+        { _id: "2", make: "FORD", model: "MUSTANG GT", price: "8500000", year: "2023", kmDriven: "0", transmission: "Manual", images: [defaultCarImage] }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleBuyClick = (car) => {
     setSelectedCar(car);
     setShowEnquiryForm(true);
-    // Set the car name in the message field
     setEnquiryData({
       ...enquiryData,
-      message: `I am interested in buying the ${car.title} priced at ${car.price}.`
+      message: `I am interested in buying the ${car.make} ${car.model} priced at ₹${Number(car.price).toLocaleString()}.`
     });
   };
 
@@ -50,11 +56,36 @@ function Buy() {
     });
   };
 
-  const handleEnquirySubmit = (e) => {
+  const handleEnquirySubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log("Enquiry submitted:", enquiryData);
-    alert("Your enquiry has been submitted successfully! Our team will contact you soon.");
+    setIsSubmitting(true);
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(enquiryData.phone)) {
+      alert("Please enter a valid 10-digit phone number.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const enquiryPayload = {
+      user: enquiryData.name,
+      car: `${selectedCar.make} ${selectedCar.model}`,
+      message: enquiryData.message,
+      email: enquiryData.email,
+      phone: enquiryData.phone,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    try {
+      const response = await axios.post('http://localhost:5000/enquiries', enquiryPayload);
+      alert(response.data.message || "Your enquiry has been submitted successfully! Our team will contact you soon.");
+    } catch (error) {
+      console.error("Error submitting enquiry:", error);
+      alert("There was an error submitting your enquiry. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
+
     setShowEnquiryForm(false);
     setEnquiryData({
       name: "",
@@ -62,6 +93,14 @@ function Buy() {
       phone: "",
       message: ""
     });
+  };
+
+  const filteredCars = cars.filter((car) =>
+    `${car.make} ${car.model}`.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const formatPrice = (price) => {
+    return `₹${Number(price).toLocaleString('en-IN')}`;
   };
 
   return (
@@ -73,7 +112,6 @@ function Buy() {
         <section className="buy-page-hero">
           <h1 className="buy-page-title">Exclusive Collection</h1>
           <p className="buy-page-subtitle">Find your dream luxury vehicle</p>
-          
           <div className="buy-page-search-container">
             <input
               type="text"
@@ -87,36 +125,44 @@ function Buy() {
 
         <section className="buy-page-collection">
           <h2 className="buy-page-section-title">Available Luxury Cars</h2>
-          
-          <div className="buy-page-cars-grid">
-            {filteredCars.length > 0 ? (
-              filteredCars.map((car) => (
-                <div key={car.id} className="buy-page-car-card">
-                  <div className="buy-page-car-image-container">
-                    <img src={car.image} alt={car.title} className="buy-page-car-image" />
-                  </div>
-                  <div className="buy-page-car-details">
-                    <h3 className="buy-page-car-title">{car.title}</h3>
-                    <p className="buy-page-car-price">{car.price}</p>
-                    <div className="buy-page-car-specs">
-                      <p><span>Year:</span> {car.year}</p>
-                      <p><span>Mileage:</span> {car.mileage}</p>
-                      <p><span>Engine:</span> {car.engine}</p>
-                      <p><span>Transmission:</span> {car.transmission}</p>
+          {isLoading ? (
+            <div className="buy-page-loading">Loading luxury cars...</div>
+          ) : (
+            <div className="buy-page-cars-grid">
+              {filteredCars.length > 0 ? (
+                filteredCars.map((car) => (
+                  <div key={car._id} className="buy-page-car-card">
+                    <div className="buy-page-car-image-container">
+                      <img 
+                        src={car.images && car.images.length > 0 ? car.images[0] : defaultCarImage} 
+                        alt={`${car.make} ${car.model}`} 
+                        className="buy-page-car-image" 
+                      />
                     </div>
-                    <button 
-                      className="buy-page-buy-button"
-                      onClick={() => handleBuyClick(car)}
-                    >
-                      Buy Now
-                    </button>
+                    <div className="buy-page-car-details">
+                      <h3 className="buy-page-car-title">{car.make} {car.model}</h3>
+                      <p className="buy-page-car-price">{formatPrice(car.price)}</p>
+                      <div className="buy-page-car-specs">
+                        <p><span>Year:</span> {car.year}</p>
+                        <p><span>Mileage:</span> {car.kmDriven} km</p>
+                        <p><span>Engine:</span> {car.fuelType || "Petrol"}</p>
+                        <p><span>Transmission:</span> {car.transmission}</p>
+                        {car.colour && <p><span>Color:</span> {car.colour}</p>}
+                      </div>
+                      <button 
+                        className="buy-page-buy-button"
+                        onClick={() => handleBuyClick(car)}
+                      >
+                        Buy Now
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="buy-page-no-results">No cars match your search criteria.</p>
-            )}
-          </div>
+                ))
+              ) : (
+                <p className="buy-page-no-results">No cars match your search criteria.</p>
+              )}
+            </div>
+          )}
         </section>
       </div>
 
@@ -127,10 +173,10 @@ function Buy() {
               className="buy-page-close-button"
               onClick={() => setShowEnquiryForm(false)}
             >
-              &times;
+              ×
             </button>
             <h2 className="buy-page-enquiry-title">
-              Enquire About {selectedCar?.title}
+              Enquire About {selectedCar?.make} {selectedCar?.model}
             </h2>
             <form className="buy-page-enquiry-form" onSubmit={handleEnquirySubmit}>
               <div className="buy-page-form-group">
@@ -146,7 +192,6 @@ function Buy() {
                   required
                 />
               </div>
-              
               <div className="buy-page-form-group">
                 <label htmlFor="email" className="buy-page-form-label">Email Address</label>
                 <input
@@ -160,7 +205,6 @@ function Buy() {
                   required
                 />
               </div>
-              
               <div className="buy-page-form-group">
                 <label htmlFor="phone" className="buy-page-form-label">Phone Number</label>
                 <input
@@ -174,7 +218,6 @@ function Buy() {
                   required
                 />
               </div>
-              
               <div className="buy-page-form-group">
                 <label htmlFor="message" className="buy-page-form-label">Message</label>
                 <textarea
@@ -188,9 +231,12 @@ function Buy() {
                   required
                 ></textarea>
               </div>
-              
-              <button type="submit" className="buy-page-submit-button">
-                Submit Enquiry
+              <button 
+                type="submit" 
+                className="buy-page-submit-button"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Enquiry"}
               </button>
             </form>
           </div>
@@ -198,7 +244,7 @@ function Buy() {
       )}
 
       <footer className="buy-page-footer">
-        <p>&copy; 2025 Luxewheels - Where Elegance Meets The Road</p>
+        <p>© 2025 Luxewheels - Where Elegance Meets The Road</p>
       </footer>
     </>
   );

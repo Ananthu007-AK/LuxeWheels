@@ -17,7 +17,7 @@ app.use(cors())
 
 app.use('/uploads', express.static('uploads'));
 
-
+app.use('/enquiries', require('./routes/enquiries'));
 
 
 app.use('/user',userRoutes)
@@ -25,6 +25,8 @@ app.use('/user',userRoutes)
 app.use('/users',authRoutes)
 
 app.use('/cars',require('./routes/CarRoutes'))
+
+app.use('/rentals',require('./routes/rentalRoutes'))
 
 
 app.get('/',(req,res)=>{

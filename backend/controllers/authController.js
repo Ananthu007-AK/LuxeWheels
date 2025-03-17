@@ -37,7 +37,7 @@ const forgotPassword = async (req, res) => {
         await user.save();
 
         // Create reset URL
-        const resetUrl = `http://localhost:5000/reset-password/${resetToken}`;
+        const resetUrl = `http://localhost:5173/resetpassword/${resetToken}`;
 
         // Send email
         await transporter.sendMail({
@@ -60,6 +60,9 @@ const resetPassword = async (req, res) => {
     try {
         const { token } = req.params;
         const { newPassword } = req.body;
+
+        console.log(newPassword);
+        
 
         console.log("Incoming token:", token);
 
