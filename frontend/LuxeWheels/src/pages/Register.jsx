@@ -12,6 +12,8 @@ function Register() {
   async function sendData() {
     if (!username || !email || !password) {
       alert('All fields are required!');
+      console.log('All fields are required!');
+      
       return;
     }
 
