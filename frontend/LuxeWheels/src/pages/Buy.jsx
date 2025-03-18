@@ -133,12 +133,13 @@ function Buy() {
                 filteredCars.map((car) => (
                   <div key={car._id} className="buy-page-car-card">
                     <div className="buy-page-car-image-container">
-                      <img 
-                        src={car.images && car.images.length > 0 ? car.images[0] : defaultCarImage} 
-                        alt={`${car.make} ${car.model}`} 
-                        className="buy-page-car-image" 
-                      />
-                    </div>
+  <img 
+    src={car.images && car.images.length > 0 ? `http://localhost:5000${car.images[0]}` : defaultCarImage} 
+    alt={`${car.make} ${car.model}`} 
+    className="buy-page-car-image" 
+    onError={(e) => console.log('Image load error:', e.target.src)} // Debug
+  />
+</div>
                     <div className="buy-page-car-details">
                       <h3 className="buy-page-car-title">{car.make} {car.model}</h3>
                       <p className="buy-page-car-price">{formatPrice(car.price)}</p>

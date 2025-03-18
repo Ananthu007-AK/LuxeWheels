@@ -213,70 +213,71 @@ function Admin() {
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
-        return (
-          <section className="admin-section-card">
-            <h2>Car Listings</h2>
-            {isLoading ? (
-              <div className="admin-loading">Loading cars...</div>
-            ) : cars.length === 0 ? (
-              <div className="admin-empty-state">No cars available. Add new cars to get started.</div>
-            ) : (
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Images</th>
-                    <th>Make</th>
-                    <th>Model</th>
-                    <th>Year</th>
-                    <th>Price</th>
-                    <th>Trans</th>
-                    <th>KM</th>
-                    <th>Colour</th>
-                    <th>Owners</th>
-                    <th>Fuel</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cars.map(car => (
-                    <tr key={car.id}>
-                      <td>
-                        {car.images && car.images.length > 0 ? (
-                          <div className="admin-image-preview-container">
-                            {car.images.map((img, index) => (
-                              <img 
-                                key={index}
-                                src={img} 
-                                alt={`${car.make} ${car.model} ${index + 1}`} 
-                                className="admin-car-image" 
-                              />
-                            ))}
-                          </div>
-                        ) : (
-                          'No Images'
-                        )}
-                      </td>
-                      <td>{car.make}</td>
-                      <td>{car.model}</td>
-                      <td>{car.year}</td>
-                      <td>${Number(car.price).toLocaleString()}</td>
-                      <td>{car.transmission}</td>
-                      <td>{Number(car.kmDriven).toLocaleString()}</td>
-                      <td>{car.colour}</td>
-                      <td>{car.owners}</td>
-                      <td>{car.fuelType}</td>
-                      <td>
-                        <span className={`admin-rental-status admin-status-${car.status}`}>
-                          {car.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-        );
+  return (
+    <section className="admin-section-card">
+      <h2>Car Listings</h2>
+      {isLoading ? (
+        <div className="admin-loading">Loading cars...</div>
+      ) : cars.length === 0 ? (
+        <div className="admin-empty-state">No cars available. Add new cars to get started.</div>
+      ) : (
+        <table className="admin-data-table">
+          <thead>
+            <tr>
+              <th>Images</th>
+              <th>Make</th>
+              <th>Model</th>
+              <th>Year</th>
+              <th>Price</th>
+              <th>Trans</th>
+              <th>KM</th>
+              <th>Colour</th>
+              <th>Owners</th>
+              <th>Fuel</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cars.map(car => (
+              <tr key={car._id || car.id}>
+                <td>
+                  {car.images && car.images.length > 0 ? (
+                    <div className="admin-image-preview-container">
+                      {car.images.map((img, index) => (
+                        <img
+                          key={index}
+                          src={`http://localhost:5000${img}`} // Add server prefix
+                          alt={`${car.make} ${car.model} ${index + 1}`}
+                          className="admin-car-image"
+                          onError={(e) => console.log('Image load error:', e.target.src)} // Debug failed loads
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    'No Images'
+                  )}
+                </td>
+                <td>{car.make}</td>
+                <td>{car.model}</td>
+                <td>{car.year}</td>
+                <td>${Number(car.price).toLocaleString()}</td>
+                <td>{car.transmission}</td>
+                <td>{Number(car.kmDriven).toLocaleString()}</td>
+                <td>{car.colour}</td>
+                <td>{car.owners}</td>
+                <td>{car.fuelType}</td>
+                <td>
+                  <span className={`admin-rental-status admin-status-${car.status}`}>
+                    {car.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
       case 'addCar':
         return (
           <section className="admin-section-card">

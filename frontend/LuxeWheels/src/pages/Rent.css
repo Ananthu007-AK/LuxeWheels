@@ -731,3 +731,73 @@
     height: 150px;
   }
 }
+
+
+
+
+
+/* Rent.css (ensure these are present) */
+
+.vehicle-details-wrapper {
+  padding: 20px;
+}
+
+.details-layout {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.vehicle-showcase {
+  flex: 1;
+  text-align: center;
+}
+
+.main-image {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.thumbnail-gallery {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #ccc;
+}
+
+.thumbnail.active {
+  border-color: #007bff;
+}
+
+.vehicle-data-sheet {
+  flex: 1;
+}
+
+.specs-table {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.spec-row {
+  flex: 1 1 calc(50% - 5px);
+  display: flex;
+  justify-content: space-between;
+}
+
+.spec-name {
+  font-weight: bold;
+}
+
+.spec-data {
+  color: #555;
+}

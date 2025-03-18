@@ -6,9 +6,10 @@ import img1 from "./car.png";
 import axios from "axios";
 
 const CollectionCard = ({ image, title, price, id }) => {
+  const imgSrc = image.startsWith('http') ? image : `http://localhost:5000${image}`;
   return (
     <div className="collection-card">
-      <img src={image} alt={title} />
+      <img src={imgSrc} alt={title} onError={(e) => console.log('Image load error:', e.target.src)} />
       <h3>{title}</h3>
       <p>{price}</p>
       <Link to={`/car/${id}`} className="collection-btn">View Details</Link>

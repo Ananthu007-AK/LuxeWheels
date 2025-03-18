@@ -34,7 +34,7 @@ function Profile() {
       try {
         setIsLoading(true);
         // Replace with your actual API endpoint
-        const response = await axios.get('http://localhost:5000/api/user/profile');
+        const response = await axios.get('http://localhost:5000/user/profile');
         
         if (!response.ok) {
           throw new Error('Failed to fetch user data');
@@ -74,7 +74,7 @@ function Profile() {
     if (isEditing) {
       try {
         // Save the changes to backend
-        const response = await axios.put('http://localhost:5000/api/user/profile', {
+        const response = await axios.put('http://localhost:5000/user/profile', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ function Profile() {
     
     try {
       // Send password change request to backend
-      const response = await axios.post('http://localhost:5000/api/user/change-password', {
+      const response = await axios.post('http://localhost:5000/user/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ function Profile() {
             const formData = new FormData();
             formData.append('profilePhoto', file);
             
-            const response = await axios.post('http://localhost:5000/api/user/profile-photo', {
+            const response = await axios.post('http://localhost:5000/user/profile-photo', {
               method: 'POST',
               body: formData
             });

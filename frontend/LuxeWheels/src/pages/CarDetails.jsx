@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "./CarDetails.css";
-import car2 from "./car2.png";
+import axios from "axios";
 
 function CarDetails() {
   const { id } = useParams();
@@ -28,62 +28,82 @@ function CarDetails() {
     specialRequests: ""
   });
 
-  // This would typically come from an API or data store
-  // For now, we'll simulate with a hardcoded collection
-  const carCollection = [
-    { 
-      id: "0", 
-      title: "VOLVO XC 90", 
-      price: "₹62,00,000",
-      rentPrice: "₹15,000/day",
-      images: [car2, car2, car2],
-      description: "Experience Swedish luxury and innovation with the VOLVO XC 90. This premium SUV combines elegant design with advanced safety features and powerful performance.",
-      specifications: {
-        engine: "2.0L 4-Cylinder Turbo & Supercharged",
-        power: "316 HP",
-        torque: "400 Nm",
-        transmission: "8-Speed Automatic",
-        acceleration: "0-100 km/h in 6.5 seconds",
-        topSpeed: "230 km/h"
-      },
-      category: "Luxury SUV"
-    },
-    { 
-      id: "1", 
-      title: "MUSTANG GT", 
-      price: "₹85,00,000",
-      rentPrice: "₹25,000/day",
-      images: ["/car3.png", "/car3-interior.png", "/car3-rear.png"],
-      description: "The iconic MUSTANG GT represents American muscle at its finest. With its aggressive styling and powerful V8 engine, it delivers an exhilarating driving experience.",
-      specifications: {
-        engine: "5.0L V8",
-        power: "460 HP",
-        torque: "570 Nm",
-        transmission: "10-Speed Automatic",
-        acceleration: "0-100 km/h in 4.2 seconds",
-        topSpeed: "250 km/h"
-      },
-      category: "Sports Car"
-    },
-    // Add more cars with similar structure
-  ];
+  const [car, setCar] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const car = carCollection[parseInt(id)] || carCollection[0];
+  useEffect(() => {
+
+    // Debug the id parameter
+    console.log("Fetched ID from useParams:", id);
+
+    // Validate id before fetching
+    if (!id || id === ":id" || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      setError("Invalid car ID. Please use a valid car ID from the collection.");
+      setIsLoading(false);
+      return;
+    }
+
+
+    const fetchCar = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:5000/cars/${id}`);
+        const fetchedCar = {
+          id: response.data._id,
+          title: `${response.data.make} ${response.data.model}`,
+          price: `₹${response.data.price.toLocaleString('en-IN')}`,
+          rentPrice: `₹${response.data.price}/day`, // Adjust based on backend rent price if available
+          images: response.data.images && response.data.images.length > 0 
+            ? response.data.images.map(img => `http://localhost:5000${img}`)
+            : [car2],
+          description: `Experience luxury with this ${response.data.make} ${response.data.model}.`,
+          year: response.data.year,
+          kmDriven: response.data.kmDriven,
+          transmission: response.data.transmission,
+          colour: response.data.colour,
+          owners: response.data.owners,
+          fuelType: response.data.fuelType,
+          status: response.data.status,
+          category: determineCategory(response.data) // Reuse category logic
+        };
+        setCar(fetchedCar);
+      } catch (error) {
+        console.error("Error fetching car:", error);
+        setError("Failed to load car details. Please try again later.");
+        setCar(null); // Fallback to null if fetch fails
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCar();
+  }, [id]);
+
+  const determineCategory = (carData) => {
+    const make = carData.make.toLowerCase();
+    if (['porsche', 'ferrari'].includes(make)) return 'Sports';
+    if (['rolls-royce'].includes(make)) return 'Ultra Luxury';
+    if (['aston martin', 'mustang'].includes(make)) return 'Grand Tourer';
+    if (['range rover'].includes(make)) return 'Grand Tourer'; // Or 'SUV'
+    if (['volvo'].includes(make)) return 'Supercar'; // Adjust as needed
+    if (['mercedes', 'c43 amg'].includes(make)) return 'Luxury';
+    return 'Luxury'; // Default category
+  };
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % car.images.length);
+    setCurrentImageIndex((prev) => (prev + 1) % (car?.images.length || 1));
   };
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + car.images.length) % car.images.length);
+    setCurrentImageIndex((prev) => (prev - 1 + (car?.images.length || 1)) % (car?.images.length || 1));
   };
 
   const handleBuyClick = (car) => {
     setSelectedCar(car);
     setShowEnquiryForm(true);
-    // Set the car name in the message field
     setEnquiryData({
       ...enquiryData,
       message: `I am interested in buying the ${car.title} priced at ${car.price}.`
@@ -100,7 +120,6 @@ function CarDetails() {
 
   const handleEnquirySubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
     console.log("Enquiry submitted:", enquiryData);
     alert("Your enquiry has been submitted successfully! Our team will contact you soon.");
     setShowEnquiryForm(false);
@@ -112,7 +131,6 @@ function CarDetails() {
     });
   };
 
-  // New handlers for booking form
   const handleOpenBookingForm = () => {
     setShowBookingForm(true);
     setSelectedCar(car);
@@ -134,9 +152,7 @@ function CarDetails() {
     e.preventDefault();
     alert(`Rental request submitted for ${car.title} from ${bookingData.pickupDate} to ${bookingData.returnDate}`);
     setShowBookingForm(false);
-    // Here you would typically handle the form submission to your backend
     console.log("Booking submitted:", bookingData);
-    // Reset form data
     setBookingData({
       name: "",
       phone: "",
@@ -146,6 +162,10 @@ function CarDetails() {
       specialRequests: ""
     });
   };
+
+  if (isLoading) return <div className="car-details-container">Loading...</div>;
+  if (error) return <div className="car-details-container">{error}</div>;
+  if (!car) return <div className="car-details-container">Car not found.</div>;
 
   return (
     <>
@@ -253,28 +273,32 @@ function CarDetails() {
           <h2>Specifications</h2>
           <div className="specifications-grid">
             <div className="spec-item">
-              <span className="spec-label">Engine</span>
-              <span className="spec-value">{car.specifications.engine}</span>
+              <span className="spec-label">Year</span>
+              <span className="spec-value">{car.year}</span>
             </div>
             <div className="spec-item">
-              <span className="spec-label">Power</span>
-              <span className="spec-value">{car.specifications.power}</span>
-            </div>
-            <div className="spec-item">
-              <span className="spec-label">Torque</span>
-              <span className="spec-value">{car.specifications.torque}</span>
+              <span className="spec-label">Mileage</span>
+              <span className="spec-value">{car.kmDriven} km</span>
             </div>
             <div className="spec-item">
               <span className="spec-label">Transmission</span>
-              <span className="spec-value">{car.specifications.transmission}</span>
+              <span className="spec-value">{car.transmission}</span>
             </div>
             <div className="spec-item">
-              <span className="spec-label">Acceleration</span>
-              <span className="spec-value">{car.specifications.acceleration}</span>
+              <span className="spec-label">Colour</span>
+              <span className="spec-value">{car.colour}</span>
             </div>
             <div className="spec-item">
-              <span className="spec-label">Top Speed</span>
-              <span className="spec-value">{car.specifications.topSpeed}</span>
+              <span className="spec-label">Owners</span>
+              <span className="spec-value">{car.owners}</span>
+            </div>
+            <div className="spec-item">
+              <span className="spec-label">Fuel Type</span>
+              <span className="spec-value">{car.fuelType}</span>
+            </div>
+            <div className="spec-item">
+              <span className="spec-label">Status</span>
+              <span className="spec-value">{car.status}</span>
             </div>
           </div>
         </div>
@@ -288,7 +312,7 @@ function CarDetails() {
               className="buy-page-close-button"
               onClick={() => setShowEnquiryForm(false)}
             >
-              &times;
+              ×
             </button>
             <h2 className="buy-page-enquiry-title">
               Enquire About {selectedCar?.title}
@@ -468,7 +492,7 @@ function CarDetails() {
       )}
 
       <footer>
-        <p>&copy; 2025 Luxewheels</p>
+        <p>© 2025 Luxewheels</p>
       </footer>
     </>
   );

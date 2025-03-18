@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Rent.css';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const RentPage = () => {
   const [selectedCar, setSelectedCar] = useState(null);
@@ -18,7 +19,6 @@ const RentPage = () => {
   const [luxuryCars, setLuxuryCars] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch cars from backend when component mounts
   useEffect(() => {
     fetchCars();
   }, []);
@@ -27,34 +27,32 @@ const RentPage = () => {
     setIsLoading(true);
     try {
       const response = await axios.get('http://localhost:5000/cars');
-      // Map the backend data to match the expected structure
       const formattedCars = response.data.map(car => ({
-        key: car.id,
-        id: car.id,
+        key: car._id || car.id,
+        id: car._id || car.id,
         name: `${car.make} ${car.model}`,
-        category: determineCategory(car), // You might need a function to determine this
+        category: determineCategory(car),
         price: parseFloat(car.price),
-        image: car.images && car.images.length > 0 ? car.images[0] : null, // Use first image
-        description: `Experience luxury with this ${car.make} ${car.model}.`, // Customize as needed
-        specs: {
-          engine: car.engine || 'N/A', // Add these fields to your backend if needed
-          horsepower: car.horsepower || 'N/A',
-          acceleration: car.acceleration || 'N/A',
-          topSpeed: car.topSpeed || 'N/A'
-        }
+        images: car.images && car.images.length > 0 ? car.images.map(img => `http://localhost:5000${img}`) : [],
+        description: `Experience luxury with this ${car.make} ${car.model}.`,
+        year: car.year,
+        kmDriven: car.kmDriven,
+        transmission: car.transmission,
+        colour: car.colour,
+        owners: car.owners,
+        fuelType: car.fuelType,
+        status: car.status
       }));
       console.log('Luxury cars:', formattedCars);
-      
       setLuxuryCars(formattedCars);
     } catch (error) {
       console.error('Error fetching cars:', error);
-      setLuxuryCars([]); // Fallback to empty array if fetch fails
+      setLuxuryCars([]); // Fallback to empty array
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Helper function to determine car category (customize based on your logic)
   const determineCategory = (car) => {
     const make = car.make.toLowerCase();
     if (['porsche', 'ferrari'].includes(make)) return 'Sports';
@@ -74,10 +72,7 @@ const RentPage = () => {
 
   const handleCarSelect = (car) => {
     setSelectedCar(car);
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleInputChange = (e) => {
@@ -103,7 +98,7 @@ const RentPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true); // Add this to state if not already present
+    setIsLoading(true);
     try {
       const rentalData = {
         carId: selectedCar.id,
@@ -157,7 +152,30 @@ const RentPage = () => {
           </div>
           <div className="details-layout">
             <div className="vehicle-showcase">
-              <img src={selectedCar.image} alt={selectedCar.name} />
+              {selectedCar.images && selectedCar.images.length > 0 ? (
+                <>
+                  <img
+                    src={selectedCar.images[0]}
+                    alt={selectedCar.name}
+                    className="main-image"
+                    onError={(e) => console.log('Main image load error:', e.target.src)}
+                  />
+                  <div className="thumbnail-gallery">
+                    {selectedCar.images.map((img, index) => (
+                      <img
+                        key={index}
+                        src={img}
+                        alt={`${selectedCar.name} thumbnail ${index + 1}`}
+                        className={index === 0 ? 'thumbnail active' : 'thumbnail'}
+                        onClick={() => {/* Add logic to switch image if needed */}}
+                        onError={(e) => console.log('Thumbnail load error:', e.target.src)}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p>No images available</p>
+              )}
             </div>
             <div className="vehicle-data-sheet">
               <h2>{selectedCar.name}</h2>
@@ -169,20 +187,32 @@ const RentPage = () => {
                 <h3 className="specs-heading">Specifications</h3>
                 <div className="specs-table">
                   <div className="spec-row">
-                    <span className="spec-name">Engine</span>
-                    <span className="spec-data">{selectedCar.specs.engine}</span>
+                    <span className="spec-name">Year</span>
+                    <span className="spec-data">{selectedCar.year}</span>
                   </div>
                   <div className="spec-row">
-                    <span className="spec-name">Horsepower</span>
-                    <span className="spec-data">{selectedCar.specs.horsepower}</span>
+                    <span className="spec-name">Mileage</span>
+                    <span className="spec-data">{selectedCar.kmDriven} km</span>
                   </div>
                   <div className="spec-row">
-                    <span className="spec-name">Acceleration</span>
-                    <span className="spec-data">{selectedCar.specs.acceleration}</span>
+                    <span className="spec-name">Transmission</span>
+                    <span className="spec-data">{selectedCar.transmission}</span>
                   </div>
                   <div className="spec-row">
-                    <span className="spec-name">Top Speed</span>
-                    <span className="spec-data">{selectedCar.specs.topSpeed}</span>
+                    <span className="spec-name">Colour</span>
+                    <span className="spec-data">{selectedCar.colour}</span>
+                  </div>
+                  <div className="spec-row">
+                    <span className="spec-name">Owners</span>
+                    <span className="spec-data">{selectedCar.owners}</span>
+                  </div>
+                  <div className="spec-row">
+                    <span className="spec-name">Fuel Type</span>
+                    <span className="spec-data">{selectedCar.fuelType}</span>
+                  </div>
+                  <div className="spec-row">
+                    <span className="spec-name">Status</span>
+                    <span className="spec-data">{selectedCar.status}</span>
                   </div>
                 </div>
               </div>
@@ -206,15 +236,15 @@ const RentPage = () => {
               <p>No cars match your search.</p>
             ) : (
               filteredCars.map(car => (
-                <div key={car.id} className="vehicle-tile" onClick={() => handleCarSelect(car)}>
+                <div key={car._id} className="vehicle-tile" onClick={() => handleCarSelect(car)}>
                   <div className="vehicle-thumbnail">
-                    <img src={car.image} alt={car.name} />
+                    <img src={car.images[0] || ''} alt={car.name} onError={(e) => console.log('Thumbnail load error:', e.target.src)} />
                   </div>
                   <div className="vehicle-info-brief">
                     <h3 className="vehicle-title">{car.name}</h3>
                     <p className="vehicle-category">{car.category}</p>
                     <p className="vehicle-rate">${car.price} <span className="rate-period">per day</span></p>
-                    <button className="details-button">View Details</button>
+                    <button className="details-button" onClick={() => handleCarSelect(car)}><Link to={`/car/${car._id}`}> View Details</Link></button>
                   </div>
                 </div>
               ))
@@ -223,7 +253,6 @@ const RentPage = () => {
         </div>
       )}
 
-      {/* Form Modal */}
       {showBookingForm && selectedCar && (
         <div className="booking-form-modal-overlay">
           <div className="booking-form-modal">
@@ -233,7 +262,7 @@ const RentPage = () => {
             </div>
             
             <div className="form-modal-car-summary">
-              <img src={selectedCar.image} alt={selectedCar.name} className="form-car-thumbnail" />
+              <img src={selectedCar.images[0] || ''} alt={selectedCar.name} className="form-car-thumbnail" onError={(e) => console.log('Form image load error:', e.target.src)} />
               <div className="form-car-details">
                 <h3>{selectedCar.name}</h3>
                 <p className="form-car-category">{selectedCar.category}</p>
