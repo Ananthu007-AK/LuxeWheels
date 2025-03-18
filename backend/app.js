@@ -28,6 +28,7 @@ app.use('/cars',require('./routes/CarRoutes'))
 
 app.use('/rentals',require('./routes/rentalRoutes'))
 
+app.use('/listings',require('./routes/listingRoutes'))
 
 app.get('/',(req,res)=>{
     res.send('Hello World')

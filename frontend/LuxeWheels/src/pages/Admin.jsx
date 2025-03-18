@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Admin() {
   const [newCar, setNewCar] = useState({
@@ -24,6 +25,8 @@ function Admin() {
   const [users, setUsers] = useState([]);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  
 
   // Fetch data when component mounts
   useEffect(() => {
@@ -104,62 +107,24 @@ function Admin() {
 
   const handleAddCar = async (e) => {
     e.preventDefault();
-    
     const formData = new FormData();
-    formData.append('make', newCar.make);
-    formData.append('model', newCar.model);
-    formData.append('year', newCar.year);
-    formData.append('price', newCar.price);
-    formData.append('status', newCar.status);
-    formData.append('transmission', newCar.transmission);
-    formData.append('kmDriven', newCar.kmDriven);
-    formData.append('colour', newCar.colour);
-    formData.append('owners', newCar.owners);
-    formData.append('fuelType', newCar.fuelType);
-  
-    // Append images to formData
-    for (let i = 0; i < newCar.images.length; i++) {
-      // Check if image is a File object or a URL string
-      if (newCar.images[i] instanceof File) {
-        formData.append('images', newCar.images[i]);
-      } else if (typeof newCar.images[i] === 'string') {
-        // If it's a URL, you might need to fetch and convert it to a File
-        // This is simplified - you may need a more robust solution
-        try {
-          const response = await fetch(newCar.images[i]);
-          const blob = await response.blob();
-          const file = new File([blob], `image-${i}.jpg`, { type: blob.type });
-          formData.append('images', file);
-        } catch (error) {
-          console.error('Error converting image URL to file:', error);
-        }
+    Object.keys(newCar).forEach(key => {
+      if (key === 'images') {
+        newCar.images.forEach(image => formData.append('images', image));
+      } else {
+        formData.append(key, newCar[key]);
       }
-    }
-  
+    });
+
     try {
       const response = await axios.post('http://localhost:5000/cars/add', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-      console.log(response.data);
-      // Update local state with the new car
       setCars([...cars, response.data.car]);
-      // Reset form
       setNewCar({
-        make: '',
-        model: '',
-        year: '',
-        price: '',
-        status: 'available',
-        images: [],
-        transmission: 'automatic',
-        kmDriven: '',
-        colour: '',
-        owners: '',
-        fuelType: 'petrol'
+        make: '', model: '', year: '', price: '', status: 'available', images: [],
+        transmission: 'automatic', kmDriven: '', colour: '', owners: '', fuelType: 'petrol'
       });
-      // Navigate to dashboard
       setActiveSection('dashboard');
     } catch (error) {
       console.error('Error adding car:', error);
@@ -201,44 +166,25 @@ function Admin() {
     try {
       const response = await axios.patch(`http://localhost:5000/listings/${id}/approve`);
       if (response.data.success) {
-        // Refresh both lists
-        fetchUserListings();
-        fetchCars();
+        setUserListings(userListings.filter(listing => listing._id !== id));
+        setCars([...cars, response.data.car]);
+        fetchUserListings(); // Refresh listings
+        fetchCars(); // Refresh cars
       }
     } catch (error) {
       console.error('Error approving listing:', error);
-      // Fallback to client-side update if API fails
-      const listing = userListings.find(l => l.id === id);
-      if (listing) {
-        const approvedCar = {
-          id: Date.now(), // Temporary ID
-          make: listing.make,
-          model: listing.model,
-          year: listing.year,
-          price: listing.price,
-          status: 'available',
-          images: listing.images,
-          transmission: listing.transmission,
-          kmDriven: listing.kmDriven,
-          colour: listing.colour,
-          owners: listing.owners,
-          fuelType: listing.fuelType
-        };
-        setCars([...cars, approvedCar]);
-        setUserListings(userListings.filter(l => l.id !== id));
-      }
+      alert('Failed to approve listing. Please try again.');
     }
   };
 
   const rejectListing = async (id) => {
     try {
       await axios.patch(`http://localhost:5000/listings/${id}/reject`);
-      // Refresh listings
-      fetchUserListings();
+      setUserListings(userListings.filter(listing => listing._id !== id));
+      fetchUserListings(); // Refresh listings
     } catch (error) {
       console.error('Error rejecting listing:', error);
-      // Fallback to client-side update if API fails
-      setUserListings(userListings.filter(l => l.id !== id));
+      alert('Failed to reject listing. Please try again.');
     }
   };
 
@@ -261,6 +207,7 @@ function Admin() {
     // Add your logout logic here, e.g., clear tokens, redirect, etc.
     alert('You have been logged out');
     setActiveSection('dashboard');
+    navigate('/');
   };
 
   const renderContent = () => {
@@ -463,23 +410,52 @@ function Admin() {
               <table className="admin-data-table">
                 <thead>
                   <tr>
-                    <th>User</th>
+                    <th>Images</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
                     <th>Make</th>
                     <th>Model</th>
                     <th>Year</th>
                     <th>Price</th>
+                    <th>Mileage</th>
+                    <th>Condition</th>
+                    <th>Colour</th>
+                    <th>Trans</th>
+                    <th>Description</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {userListings.map(listing => (
-                    <tr key={listing.id}>
-                      <td>{listing.userName}</td>
+                    <tr key={listing._id}>
+                      <td>
+                        {listing.images && listing.images.length > 0 ? (
+                          <div className="admin-image-preview-container">
+                            {listing.images.map((img, index) => (
+                              <img
+                                key={index}
+                                src={`http://localhost:5000${img}`}
+                                alt={`${listing.make} ${listing.model} ${index + 1}`}
+                                className="admin-car-image"
+                              />
+                            ))}
+                          </div>
+                        ) : 'No Images'}
+                      </td>
+                      <td>{listing.name}</td>
+                      <td>{listing.email}</td>
+                      <td>{listing.phone}</td>
                       <td>{listing.make}</td>
                       <td>{listing.model}</td>
                       <td>{listing.year}</td>
                       <td>${Number(listing.price).toLocaleString()}</td>
+                      <td>{Number(listing.mileage).toLocaleString()}</td>
+                      <td>{listing.condition}</td>
+                      <td>{listing.color}</td>
+                      <td>{listing.transmission}</td>
+                      <td>{listing.description}</td>
                       <td>
                         <span className={`admin-rental-status admin-status-${listing.status}`}>
                           {listing.status}
@@ -488,14 +464,14 @@ function Admin() {
                       <td>
                         {listing.status === 'pending' && (
                           <div className="admin-action-buttons">
-                            <button 
-                              onClick={() => verifyListing(listing.id)}
+                            <button
+                              onClick={() => verifyListing(listing._id)}
                               className="admin-action-btn admin-approve-btn"
                             >
                               Approve
                             </button>
-                            <button 
-                              onClick={() => rejectListing(listing.id)}
+                            <button
+                              onClick={() => rejectListing(listing._id)}
                               className="admin-action-btn admin-reject-btn"
                             >
                               Reject

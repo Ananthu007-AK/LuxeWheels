@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Sell.css';
 import Navbar from '../components/Navbar';
+import axios from 'axios';
 
 const SellPage = () => {
   const [formData, setFormData] = useState({
@@ -10,7 +11,7 @@ const SellPage = () => {
     mileage: '',
     condition: 'Excellent',
     color: '',
-    transmission: 'Automatic',
+    transmission: 'automatic',
     price: '',
     description: '',
     name: '',
@@ -52,11 +53,53 @@ const SellPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submitted car details:', formData);
-    // Here you would typically send the data to your backend
-    alert('Your vehicle has been submitted for review. Our team will contact you shortly.');
+
+    // Create FormData object to handle text and file uploads
+    const submissionData = new FormData();
+    Object.keys(formData).forEach(key => {
+      if (key === 'images') {
+        formData.images.forEach((image, index) => {
+          submissionData.append('images', image); // Append each image file
+        });
+      } else {
+        submissionData.append(key, formData[key]); // Append text fields
+      }
+    });
+
+    try {
+      // Send data to backend
+      const response = await axios.post('http://localhost:5000/listings', submissionData, {
+        headers: {
+          'Content-Type': 'multipart/form-data' // Required for file uploads
+        }
+      });
+
+      console.log('Submitted car details:', response.data);
+      alert('Your vehicle has been submitted for review. Our team will contact you shortly.');
+
+      // Reset form after successful submission
+      setFormData({
+        make: '',
+        model: '',
+        year: '',
+        mileage: '',
+        condition: 'Excellent',
+        color: '',
+        transmission: 'automatic',
+        price: '',
+        description: '',
+        name: '',
+        email: '',
+        phone: '',
+        images: []
+      });
+      setPreviewImages([]);
+    } catch (error) {
+      console.error('Error submitting listing:', error);
+      alert('There was an error submitting your vehicle. Please try again.');
+    }
   };
 
   const conditions = ['Excellent', 'Very Good', 'Good', 'Fair'];
