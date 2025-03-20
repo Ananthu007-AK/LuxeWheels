@@ -1,8 +1,16 @@
-import { Link } from "react-router-dom";
-import '../pages/Home.css' // Add styles for the navbar if needed
-import { Link as ScrollLink} from "react-scroll"; // Import Link from react-scroll
+import { Link, useNavigate } from "react-router-dom";
+import '../pages/Home.css';
+import { Link as ScrollLink } from "react-scroll";
 
-const Navbar = () => {
+const Navbar = ({ user, setUser }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("username");
+    setUser(null);
+    navigate("/");
+  };
+
   return (
     <nav className="navbar">
       <a href="/" className="logo">
@@ -14,7 +22,12 @@ const Navbar = () => {
         <Link to="/sell">Sell</Link>
         <ScrollLink to="about" smooth={true} duration={500}>About us</ScrollLink>
         <Link to="/profile">Profile</Link>
-        <Link to="/Login">Login/Signup</Link>
+
+        {user ? (
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
+        ) : (
+          <Link to="/login">Login/Signup</Link>
+        )}
       </div>
     </nav>
   );
