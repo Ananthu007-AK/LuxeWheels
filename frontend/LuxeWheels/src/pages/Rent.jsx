@@ -37,7 +37,7 @@ const RentPage = () => {
         _id: car._id || car.id,
         name: `${car.make} ${car.model}`,
         category: determineCategory(car),
-        price: parseFloat(car.price),
+        price: parseFloat(car.rent),
         images: car.images && car.images.length > 0 ? car.images.map(img => `http://localhost:5000${img}`) : [],
         description: `Experience luxury with this ${car.make} ${car.model}.`,
         year: car.year,
@@ -185,7 +185,7 @@ const RentPage = () => {
             <div className="vehicle-data-sheet">
               <h2>{selectedCar.name}</h2>
               <p className="vehicle-class">{selectedCar.category}</p>
-              <p className="rental-cost">${selectedCar.price} <span className="cost-interval">per day</span></p>
+              <p className="rental-cost">₹{selectedCar.rent} <span className="cost-interval">per day</span></p>
               <p className="vehicle-description">{selectedCar.description}</p>
               
               <div className="technical-specs">

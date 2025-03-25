@@ -4,11 +4,16 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function Admin() {
+  // Initialize activeSection from localStorage, default to 'dashboard'
+  const [activeSection, setActiveSection] = useState(() => {
+    return localStorage.getItem('adminActiveSection') || 'dashboard';
+  });
   const [newCar, setNewCar] = useState({
     make: '',
     model: '',
     year: '',
     price: '',
+    rent: '',
     status: 'available',
     images: [],
     transmission: 'automatic',
@@ -17,19 +22,21 @@ function Admin() {
     owners: '',
     fuelType: 'petrol'
   });
-
   const [userListings, setUserListings] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [rentals, setRentals] = useState([]);
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
-  const [activeSection, setActiveSection] = useState('dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  
 
   // Fetch data when component mounts
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     fetchCars();
     fetchUserListings();
     fetchEnquiries();
@@ -37,14 +44,22 @@ function Admin() {
     fetchUsers();
   }, []);
 
+  // Persist activeSection to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('adminActiveSection', activeSection);
+  }, [activeSection]);
+
   // Fetch cars from backend
   const fetchCars = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/cars');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/cars', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setCars(response.data);
     } catch (error) {
-      console.error('Error fetching cars:', error);
+      console.error('Error fetching cars:', error.response?.data || error.message);
     } finally {
       setIsLoading(false);
     }
@@ -53,21 +68,26 @@ function Admin() {
   // Fetch user listings from backend
   const fetchUserListings = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/listings/pending');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/listings/pending', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setUserListings(response.data);
     } catch (error) {
-      console.error('Error fetching user listings:', error);
+      console.error('Error fetching user listings:', error.response?.data || error.message);
     }
   };
 
   // Fetch enquiries from backend
   const fetchEnquiries = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/enquiries');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/enquiries', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setEnquiries(response.data);
     } catch (error) {
-      console.error('Error fetching enquiries:', error);
-      // Fallback to sample data if API fails
+      console.error('Error fetching enquiries:', error.response?.data || error.message);
       setEnquiries([
         { id: 1, user: 'Mike Johnson', car: 'BMW X5', message: 'Is this still available?', date: '2025-03-15' }
       ]);
@@ -77,11 +97,13 @@ function Admin() {
   // Fetch rentals from backend
   const fetchRentals = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/rentals');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/rentals', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setRentals(response.data);
     } catch (error) {
-      console.error('Error fetching rentals:', error);
-      // Fallback to sample data if API fails
+      console.error('Error fetching rentals:', error.response?.data || error.message);
       setRentals([
         { id: 1, car: 'Mercedes S-Class 2023', renter: 'Sarah Williams', startDate: '2025-03-14', endDate: '2025-03-21', status: 'active' },
         { id: 2, car: 'Tesla Model 3 2022', renter: 'James Brown', startDate: '2025-03-15', endDate: '2025-03-18', status: 'active' }
@@ -89,29 +111,24 @@ function Admin() {
     }
   };
 
-  // Fetch users from backend
+  // Fetch users from backend (assuming backend excludes admins)
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found');
-  
       const response = await axios.get('http://localhost:5000/users', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-  
-      console.log('Fetched users:', response.data); // Debug log
+      console.log('Fetched users:', response.data);
       const mappedUsers = response.data.map(user => ({
         id: user.id,
         name: user.name,
         email: user.email,
         registered: user.registered,
-        phone: user.phone,
-        address: user.address,
+        phone: user.phone || 'N/A',
+        address: user.address || 'N/A',
         status: user.status
       }));
-  
       setUsers(mappedUsers);
     } catch (error) {
       console.error('Error fetching users:', error.response?.data || error.message);
@@ -130,17 +147,21 @@ function Admin() {
     });
 
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:5000/cars/add', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
       });
       setCars([...cars, response.data.car]);
       setNewCar({
-        make: '', model: '', year: '', price: '', status: 'available', images: [],
+        make: '', model: '', year: '', price: '', rent: '' ,status: 'available', images: [],
         transmission: 'automatic', kmDriven: '', colour: '', owners: '', fuelType: 'petrol'
       });
-      setActiveSection('dashboard');
+      setActiveSection('dashboard'); // Switch to dashboard after adding car
     } catch (error) {
-      console.error('Error adding car:', error);
+      console.error('Error adding car:', error.response?.data || error.message);
       alert('Failed to add car. Please try again.');
     }
   };
@@ -166,7 +187,6 @@ function Admin() {
       return true;
     });
 
-    // Keep the File objects for upload
     setNewCar({ ...newCar, images: [...newCar.images, ...validImages] });
   };
 
@@ -177,38 +197,45 @@ function Admin() {
 
   const verifyListing = async (id) => {
     try {
-      const response = await axios.patch(`http://localhost:5000/listings/${id}/approve`);
+      const token = localStorage.getItem('token');
+      const response = await axios.patch(`http://localhost:5000/listings/${id}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (response.data.success) {
         setUserListings(userListings.filter(listing => listing._id !== id));
         setCars([...cars, response.data.car]);
-        fetchUserListings(); // Refresh listings
-        fetchCars(); // Refresh cars
+        fetchUserListings();
+        fetchCars();
       }
     } catch (error) {
-      console.error('Error approving listing:', error);
+      console.error('Error approving listing:', error.response?.data || error.message);
       alert('Failed to approve listing. Please try again.');
     }
   };
 
   const rejectListing = async (id) => {
     try {
-      await axios.patch(`http://localhost:5000/listings/${id}/reject`);
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/listings/${id}/reject`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setUserListings(userListings.filter(listing => listing._id !== id));
-      fetchUserListings(); // Refresh listings
+      fetchUserListings();
     } catch (error) {
-      console.error('Error rejecting listing:', error);
+      console.error('Error rejecting listing:', error.response?.data || error.message);
       alert('Failed to reject listing. Please try again.');
     }
   };
 
   const completeRental = async (id) => {
     try {
-      await axios.patch(`http://localhost:5000/rentals/${id}/complete`);
-      // Refresh rentals
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/rentals/${id}/complete`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       fetchRentals();
     } catch (error) {
-      console.error('Error completing rental:', error);
-      // Fallback to client-side update if API fails
+      console.error('Error completing rental:', error.response?.data || error.message);
       setRentals(rentals.map(rental =>
         rental.id === id ? { ...rental, status: 'completed' } : rental
       ));
@@ -217,80 +244,84 @@ function Admin() {
 
   const handleLogout = () => {
     console.log('Logging out...');
-    // Add your logout logic here, e.g., clear tokens, redirect, etc.
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('adminActiveSection'); // Reset section on logout
+    setUsers([]);
     alert('You have been logged out');
-    setActiveSection('dashboard');
-    navigate('/');
+    navigate('/login');
   };
 
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
-  return (
-    <section className="admin-section-card">
-      <h2>Car Listings</h2>
-      {isLoading ? (
-        <div className="admin-loading">Loading cars...</div>
-      ) : cars.length === 0 ? (
-        <div className="admin-empty-state">No cars available. Add new cars to get started.</div>
-      ) : (
-        <table className="admin-data-table">
-          <thead>
-            <tr>
-              <th>Images</th>
-              <th>Make</th>
-              <th>Model</th>
-              <th>Year</th>
-              <th>Price</th>
-              <th>Trans</th>
-              <th>KM</th>
-              <th>Colour</th>
-              <th>Owners</th>
-              <th>Fuel</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cars.map(car => (
-              <tr key={car._id || car.id}>
-                <td>
-                  {car.images && car.images.length > 0 ? (
-                    <div className="admin-image-preview-container">
-                      {car.images.map((img, index) => (
-                        <img
-                          key={index}
-                          src={`http://localhost:5000${img}`} // Add server prefix
-                          alt={`${car.make} ${car.model} ${index + 1}`}
-                          className="admin-car-image"
-                          onError={(e) => console.log('Image load error:', e.target.src)} // Debug failed loads
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    'No Images'
-                  )}
-                </td>
-                <td>{car.make}</td>
-                <td>{car.model}</td>
-                <td>{car.year}</td>
-                <td>${Number(car.price).toLocaleString()}</td>
-                <td>{car.transmission}</td>
-                <td>{Number(car.kmDriven).toLocaleString()}</td>
-                <td>{car.colour}</td>
-                <td>{car.owners}</td>
-                <td>{car.fuelType}</td>
-                <td>
-                  <span className={`admin-rental-status admin-status-${car.status}`}>
-                    {car.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </section>
-  );
+        return (
+          <section className="admin-section-card">
+            <h2>Car Listings</h2>
+            {isLoading ? (
+              <div className="admin-loading">Loading cars...</div>
+            ) : cars.length === 0 ? (
+              <div className="admin-empty-state">No cars available. Add new cars to get started.</div>
+            ) : (
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Images</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Year</th>
+                    <th>Price</th>
+                    <th>Rent</th>
+                    <th>Trans</th>
+                    <th>KM</th>
+                    <th>Colour</th>
+                    <th>Owners</th>
+                    <th>Fuel</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cars.map(car => (
+                    <tr key={car._id || car.id}>
+                      <td>
+                        {car.images && car.images.length > 0 ? (
+                          <div className="admin-image-preview-container">
+                            {car.images.map((img, index) => (
+                              <img
+                                key={index}
+                                src={`http://localhost:5000${img}`}
+                                alt={`${car.make} ${car.model} ${index + 1}`}
+                                className="admin-car-image"
+                                onError={(e) => console.log('Image load error:', e.target.src)}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          'No Images'
+                        )}
+                      </td>
+                      <td>{car.make}</td>
+                      <td>{car.model}</td>
+                      <td>{car.year}</td>
+                      <td>${Number(car.price).toLocaleString()}</td>
+                      <td>${Number(car.rent).toLocaleString()}</td>
+                      <td>{car.transmission}</td>
+                      <td>{Number(car.kmDriven).toLocaleString()}</td>
+                      <td>{car.colour}</td>
+                      <td>{car.owners}</td>
+                      <td>{car.fuelType}</td>
+                      <td>
+                        <span className={`admin-rental-status admin-status-${car.status}`}>
+                          {car.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </section>
+        );
       case 'addCar':
         return (
           <section className="admin-section-card">
@@ -328,6 +359,14 @@ function Admin() {
                   placeholder="Price"
                   value={newCar.price}
                   onChange={(e) => setNewCar({ ...newCar, price: e.target.value })}
+                  className="admin-input-field"
+                  required
+                />
+                <input
+                  type="number"
+                  placeholder="Rent"
+                  value={newCar.rent}
+                  onChange={(e)=> setNewCar({ ...newCar, rent: e.target.value })}
                   className="admin-input-field"
                   required
                 />

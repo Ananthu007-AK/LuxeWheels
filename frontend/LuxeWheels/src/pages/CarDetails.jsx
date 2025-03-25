@@ -58,7 +58,7 @@ function CarDetails() {
           id: response.data._id,
           title: `${response.data.make} ${response.data.model}`,
           price: `₹${response.data.price.toLocaleString('en-IN')}`,
-          rentPrice: `₹${response.data.price}/day`, // Adjust based on backend rent price if available
+          rentPrice: `₹${response.data.rent}/day`, // Adjust based on backend rent price if available
           images: response.data.images && response.data.images.length > 0 
             ? response.data.images.map(img => `http://localhost:5000${img}`)
             : [car2],
