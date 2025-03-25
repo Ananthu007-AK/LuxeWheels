@@ -5,14 +5,14 @@ import Navbar from "../components/Navbar";
 import img1 from "./car.png";
 import axios from "axios";
 
-const CollectionCard = ({ image, title, price, id }) => {
+const CollectionCard = ({ image, title, price, _id }) => {
   const imgSrc = image.startsWith("http") ? image : `http://localhost:5000${image}`;
   return (
     <div className="collection-card">
       <img src={imgSrc} alt={title} onError={(e) => console.log("Image load error:", e.target.src)} />
       <h3>{title}</h3>
       <p>{price}</p>
-      <Link to={`/car/${id}`} className="collection-btn">View Details</Link>
+      <Link to={`/cars/${_id}`} className="collection-btn">View Details</Link>
     </div>
   );
 };
@@ -51,8 +51,8 @@ function Home() {
         <section className="hero">
           {user ? (
             <>
-              <h1>Welcome, {user}!</h1>
-              <p>Discover your dream luxury car.</p>
+              <h2>Welcome, {user}!</h2>
+              <h1>Discover your dream luxury car.</h1>
             </>
           ) : (
             <>
@@ -82,8 +82,8 @@ function Home() {
             )
             .map((car) => (
               <CollectionCard
-                key={car.id}
-                id={car.id}
+                key={car._id}
+                _id={car._id}
                 image={car.images[0] || img1}
                 title={`${car.make} ${car.model}`}
                 price={`₹${Number(car.price).toLocaleString()}`}

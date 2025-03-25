@@ -15,11 +15,8 @@ function Profile() {
     address: "",
     profilePhoto: userPlaceholder
   });
-  
-  const [formData, setFormData] = useState({
-    ...userData
-  });
-  
+  const [user, setUser] = useState(null);
+  const [formData, setFormData] = useState({ ...userData });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -28,70 +25,121 @@ function Profile() {
 
   const fileInputRef = useRef(null);
 
-  // Fetch user data from backend
+  // Fetch user data or reset on token change
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        setIsLoading(true);
-        // Replace with your actual API endpoint
-        const response = await axios.get('http://localhost:5000/user/profile');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-        
-        const data = await response.json();
-        
-        // Set user data with data from backend
-        setUserData({
-          name: data.name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          profilePhoto: data.profilePhoto || userPlaceholder
-        });
-        
-        // Initialize form data with the same values
-        setFormData({
-          name: data.name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          profilePhoto: data.profilePhoto || userPlaceholder
-        });
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        // You might want to show an error message to the user
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
 
-    fetchUserData();
-  }, []);
+    if (username && token) {
+      setUser(username);
+      fetchUserData();
+    } else {
+      // Reset state on logout (no token)
+      setUser(null);
+      setUserData({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        profilePhoto: userPlaceholder
+      });
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        profilePhoto: userPlaceholder
+      });
+      setIsLoading(false);
+    }
+  }, []); // Empty dependency array to run only on mount
+
+  const fetchUserData = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const response = await axios.get("http://localhost:5000/user/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = response.data;
+      setUserData({
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        profilePhoto: data.profilePhoto || userPlaceholder
+      });
+      setFormData({
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        profilePhoto: data.profilePhoto || userPlaceholder
+      });
+    } catch (error) {
+      console.error("Error fetching user data:", error.response?.data || error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle logout from Navbar
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    setUser(null);
+    setUserData({
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      profilePhoto: userPlaceholder
+    });
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      profilePhoto: userPlaceholder
+    });
+  };
 
   const handleEditToggle = async () => {
     if (isEditing) {
       try {
-        // Save the changes to backend
-        const response = await axios.put('http://localhost:5000/user/profile', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+
+        const response = await axios.put(
+          "http://localhost:5000/user/update",
+          {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address
           },
-          body: JSON.stringify(formData)
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        setUserData({
+          ...formData,
+          profilePhoto: userData.profilePhoto
         });
-        
-        if (!response.ok) {
-          throw new Error('Failed to update profile');
-        }
-        
-        // Update local state
-        setUserData({...formData});
-        alert("Profile updated successfully!");
+        alert(response.data.msg);
       } catch (error) {
-        console.error("Error updating profile:", error);
+        console.error("Error updating profile:", error.response?.data || error.message);
         alert("Failed to update profile. Please try again.");
+        return;
       }
     }
     setIsEditing(!isEditing);
@@ -119,24 +167,23 @@ function Profile() {
       alert("Passwords don't match!");
       return;
     }
-    
+
     try {
-      // Send password change request to backend
-      const response = await axios.post('http://localhost:5000/user/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:5000/user/change-password",
+        {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to change password');
-      }
-      
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
       alert("Password changed successfully!");
       setPasswordData({
         currentPassword: "",
@@ -144,7 +191,7 @@ function Profile() {
         confirmPassword: ""
       });
     } catch (error) {
-      console.error("Error changing password:", error);
+      console.error("Error changing password:", error.response?.data || error.message);
       alert("Failed to change password. Please try again.");
     }
   };
@@ -157,42 +204,43 @@ function Profile() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
-      
+
       reader.onload = async (event) => {
         const newProfilePhoto = event.target.result;
-        
+
         setFormData({
           ...formData,
           profilePhoto: newProfilePhoto
         });
-        
-        // If not in editing mode, immediately update the profile photo
+
         if (!isEditing) {
           try {
-            // Create a FormData object to send the file
-            const formData = new FormData();
-            formData.append('profilePhoto', file);
-            
-            const response = await axios.post('http://localhost:5000/user/profile-photo', {
-              method: 'POST',
-              body: formData
-            });
-            
-            if (!response.ok) {
-              throw new Error('Failed to update profile photo');
-            }
-            
+            const token = localStorage.getItem("token");
+            const formDataToSend = new FormData();
+            formDataToSend.append("profilePhoto", file);
+
+            const response = await axios.post(
+              "http://localhost:5000/user/profile-photo",
+              formDataToSend,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "multipart/form-data"
+                }
+              }
+            );
+
             setUserData({
               ...userData,
-              profilePhoto: newProfilePhoto
+              profilePhoto: response.data.profilePhoto || newProfilePhoto
             });
           } catch (error) {
-            console.error("Error updating profile photo:", error);
+            console.error("Error updating profile photo:", error.response?.data || error.message);
             alert("Failed to update profile photo. Please try again.");
           }
         }
       };
-      
+
       reader.readAsDataURL(file);
     }
   };
@@ -201,7 +249,11 @@ function Profile() {
     if (isLoading) {
       return <div className="profile-loading">Loading user data...</div>;
     }
-    
+
+    if (!user) {
+      return <div className="profile-loading">Please log in to view your profile.</div>;
+    }
+
     if (isEditing) {
       return (
         <form className="profile-edit-form">
@@ -274,7 +326,11 @@ function Profile() {
     if (isLoading) {
       return <div className="profile-loading">Loading user data...</div>;
     }
-    
+
+    if (!user) {
+      return <div className="profile-loading">Please log in to change your password.</div>;
+    }
+
     return (
       <form className="profile-password-form" onSubmit={handlePasswordSubmit}>
         <div className="profile-form-group">
@@ -320,7 +376,7 @@ function Profile() {
   return (
     <>
       <title>Profile - Luxewheels</title>
-      <Navbar />
+      <Navbar user={user} setUser={setUser} onLogout={handleLogout} /> {/* Pass logout handler */}
 
       <div className="profile-container">
         <div className="profile-header">
@@ -332,10 +388,10 @@ function Profile() {
           <div className="profile-sidebar">
             <div className="profile-avatar-container">
               <div className="profile-avatar-wrapper">
-                <img 
-                  src={isEditing ? formData.profilePhoto : userData.profilePhoto} 
-                  alt="Profile" 
-                  className="profile-avatar" 
+                <img
+                  src={isEditing ? formData.profilePhoto : userData.profilePhoto}
+                  alt="Profile"
+                  className="profile-avatar"
                   onClick={handlePhotoClick}
                 />
                 <div className="profile-avatar-overlay" onClick={handlePhotoClick}>
@@ -350,7 +406,7 @@ function Profile() {
                   className="profile-avatar-input"
                 />
               </div>
-              {!isLoading && (
+              {!isLoading && user && (
                 <>
                   <h2 className="profile-name">{userData.name}</h2>
                   <p className="profile-email">{userData.email}</p>
@@ -358,13 +414,13 @@ function Profile() {
               )}
             </div>
             <div className="profile-navigation">
-              <button 
+              <button
                 className={`profile-nav-item ${activeTab === "details" ? "active" : ""}`}
                 onClick={() => setActiveTab("details")}
               >
                 Personal Details
               </button>
-              <button 
+              <button
                 className={`profile-nav-item ${activeTab === "password" ? "active" : ""}`}
                 onClick={() => setActiveTab("password")}
               >
@@ -378,11 +434,8 @@ function Profile() {
               <div className="profile-section">
                 <div className="profile-section-header">
                   <h2>Personal Details</h2>
-                  {!isLoading && (
-                    <button 
-                      className="profile-edit-btn"
-                      onClick={handleEditToggle}
-                    >
+                  {!isLoading && user && (
+                    <button className="profile-edit-btn" onClick={handleEditToggle}>
                       {isEditing ? "Save Changes" : "Edit Details"}
                     </button>
                   )}
@@ -404,7 +457,7 @@ function Profile() {
       </div>
 
       <footer>
-        <p>&copy; 2025 Luxewheels</p>
+        <p>© 2025 Luxewheels</p>
       </footer>
     </>
   );

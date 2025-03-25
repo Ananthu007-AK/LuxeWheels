@@ -18,8 +18,13 @@ function Buy() {
     phone: "",
     message: ""
   });
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const username = localStorage.getItem("username");
+    if (username) {
+      setUser(username);
+    }
     fetchCars();
   }, []);
 
@@ -106,7 +111,8 @@ function Buy() {
   return (
     <>
       <title>Luxewheels - Buy Luxury Cars</title>
-      <Navbar />
+      <Navbar user={user} setUser={setUser} />
+
 
       <div className="buy-page-container">
         <section className="buy-page-hero">

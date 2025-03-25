@@ -92,16 +92,29 @@ function Admin() {
   // Fetch users from backend
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/users');
-      setUsers(response.data);
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+  
+      const response = await axios.get('http://localhost:5000/users', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+  
+      console.log('Fetched users:', response.data); // Debug log
+      const mappedUsers = response.data.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        registered: user.registered,
+        phone: user.phone,
+        address: user.address,
+        status: user.status
+      }));
+  
+      setUsers(mappedUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
-      // Fallback to sample data if API fails
-      setUsers([
-        { id: 1, name: 'John Doe', email: 'john@example.com', registered: '2025-01-15', status: 'active' },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com', registered: '2025-02-01', status: 'active' },
-        { id: 3, name: 'Mike Johnson', email: 'mike@example.com', registered: '2025-02-20', status: 'active' }
-      ]);
+      console.error('Error fetching users:', error.response?.data || error.message);
     }
   };
 
@@ -581,6 +594,8 @@ function Admin() {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Registered Date</th>
+                    <th>Phone</th>
+                    <th>Address</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -590,6 +605,8 @@ function Admin() {
                       <td>{user.name}</td>
                       <td>{user.email}</td>
                       <td>{user.registered}</td>
+                      <td>{user.phone || 'N/A'}</td>
+                      <td>{user.address || 'N/A'}</td>
                       <td>
                         <span className={`admin-rental-status admin-status-${user.status}`}>
                           {user.status}

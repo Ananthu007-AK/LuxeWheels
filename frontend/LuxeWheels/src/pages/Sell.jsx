@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Sell.css';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
@@ -21,6 +21,15 @@ const SellPage = () => {
   });
 
   const [previewImages, setPreviewImages] = useState([]);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => { 
+    const username = localStorage.getItem('username');
+    if (username) {
+      setUser(username);
+    }
+    }, []);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,7 +116,7 @@ const SellPage = () => {
 
   return (
     <>
-    <Navbar />
+    <Navbar user={user} setUser={setUser} />
     <div className="sell-page-container">
       <div className="sell-header">
         <h1 className="luxurious-title">Sell Your Luxury Vehicle</h1>

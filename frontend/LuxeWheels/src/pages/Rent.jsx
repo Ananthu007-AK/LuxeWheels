@@ -18,8 +18,13 @@ const RentPage = () => {
   });
   const [luxuryCars, setLuxuryCars] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const username = localStorage.getItem("username");
+    if (username) {
+      setUser(username);
+    }
     fetchCars();
   }, []);
 
@@ -29,7 +34,7 @@ const RentPage = () => {
       const response = await axios.get('http://localhost:5000/cars');
       const formattedCars = response.data.map(car => ({
         key: car._id || car.id,
-        id: car._id || car.id,
+        _id: car._id || car.id,
         name: `${car.make} ${car.model}`,
         category: determineCategory(car),
         price: parseFloat(car.price),
@@ -125,7 +130,7 @@ const RentPage = () => {
 
   return (
     <div className="rental-page-container">
-      <Navbar />
+      <Navbar user={user} setUser={setUser} />
       
       {!selectedCar && (
         <div className="showcase-banner">
@@ -244,7 +249,7 @@ const RentPage = () => {
                     <h3 className="vehicle-title">{car.name}</h3>
                     <p className="vehicle-category">{car.category}</p>
                     <p className="vehicle-rate">${car.price} <span className="rate-period">per day</span></p>
-                    <button className="details-button" onClick={() => handleCarSelect(car)}><Link to={`/car/${car._id}`}> View Details</Link></button>
+                    <button className="details-button" onClick={() => handleCarSelect(car)}><Link to={`/cars/${car._id}`}> View Details</Link></button>
                   </div>
                 </div>
               ))

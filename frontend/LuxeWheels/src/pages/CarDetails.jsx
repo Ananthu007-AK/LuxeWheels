@@ -31,6 +31,7 @@ function CarDetails() {
   const [car, setCar] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
 
@@ -44,6 +45,10 @@ function CarDetails() {
       return;
     }
 
+    const username = localStorage.getItem("username");
+    if (username) {
+      setUser(username);
+    }
 
     const fetchCar = async () => {
       setIsLoading(true);
@@ -169,7 +174,7 @@ function CarDetails() {
 
   return (
     <>
-      <Navbar />
+      <Navbar user={user} setUser={setUser} />
       
       <div className="car-details-container">
         <div className="car-details-header">

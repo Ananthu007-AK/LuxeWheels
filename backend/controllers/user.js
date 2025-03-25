@@ -80,16 +80,62 @@ const loginController = async (req, res) => {
 // Get User Profile
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.userId).select('-password'); // Exclude password field
+        const user = await User.findById(req.userId).select('-password');
         if (!user) return res.status(404).json({ msg: "User not found" });
 
-        return res.json({ user });
-
+        return res.json({
+            name: user.username,
+            email: user.email,
+            role: user.role,
+            phone: user.phone || '',
+            address: user.address || ''
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ msg: "Server error" });
     }
 };
+
+const updateProfile = async (req, res) => {
+    try {
+        const { name, email, phone, address } = req.body;
+
+        // Validate required fields (optional, adjust as needed)
+        if (!name || !email) {
+            return res.status(400).json({ msg: "Name and email are required" });
+        }
+
+        // Update user in the database
+        const updatedUser = await User.findByIdAndUpdate(
+            req.userId, // From verifyToken middleware
+            {
+                username: name, // Assuming username is the "name" field
+                email,
+                phone, // Add if in schema
+                address // Add if in schema
+            },
+            { new: true, runValidators: true } // Return updated doc, validate schema
+        ).select('-password');
+
+        if (!updatedUser) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+
+        return res.status(200).json({
+            msg: "Profile updated successfully",
+            user: {
+                name: updatedUser.username,
+                email: updatedUser.email,
+                phone: updatedUser.phone || '',
+                address: updatedUser.address || ''
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: "Server error" });
+    }
+};
+
 
 // Admin Dashboard
 const adminDashboard = async (req, res) => {
@@ -114,12 +160,41 @@ const userHome = async (req, res) => {
    
 }
 
+const getAllUsers = async (req, res) => {
+    try {
+        // Fetch all users except those with role 'admin', excluding passwords
+        const users = await User.find({ role: { $ne: 'admin' } }).select('-password');
+        if (!users || users.length === 0) {
+            return res.status(404).json({ msg: "No non-admin users found" });
+        }
+
+        // Map the data to match frontend expectations
+        const formattedUsers = users.map(user => ({
+            id: user._id,
+            name: user.username,
+            email: user.email,
+            registered: user.createdAt ? user.createdAt.toISOString().split('T')[0] : 'N/A',
+            phone: user.phone || 'N/A',
+            address: user.address || 'N/A',
+            status: 'active' // All non-admins are considered 'active'
+        }));
+
+        return res.status(200).json(formattedUsers);
+    } catch (error) {
+        console.error('Error fetching all users:', error);
+        return res.status(500).json({ msg: "Server error" });
+    }
+};
+
+
 module.exports = {
     registerController,
     loginController,
     registervalidation,
     loginvalidation,
     getProfile,
+    updateProfile,
     adminDashboard,
-    userHome
+    userHome,
+    getAllUsers
 };

@@ -25,7 +25,7 @@ function App() {
         <Route path="/sell" element={<Sell />} />
         <Route path="/buy" element={<Buy />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/car/:id" element={<CarDetails />} />
+        <Route path="/cars/:id" element={<CarDetails />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/resetpassword/:token" element={<ResetPassword />} /> 
       </Routes>

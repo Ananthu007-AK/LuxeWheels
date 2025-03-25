@@ -22,6 +22,8 @@ app.use('/enquiries', require('./routes/enquiries'));
 
 app.use('/user',userRoutes)
 
+app.use('/users',require('./routes/user'))
+
 app.use('/users',authRoutes)
 
 app.use('/cars',require('./routes/CarRoutes'))

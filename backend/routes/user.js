@@ -27,4 +27,8 @@ router.get('/admin', verifyToken, verifyRole('admin'), userController.adminDashb
 
 router.get('/user/:username',userController.userHome);
 
+router.put('/update',verifyToken,userController.updateProfile);
+
+router.get('/', verifyToken, verifyRole('admin'), userController.getAllUsers)
+
 module.exports = router;
