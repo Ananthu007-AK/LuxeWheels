@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "./CarDetails.css";
 import axios from "axios";
+import car2 from "./car.png"; // Assuming a default car image exists
 
 function CarDetails() {
   const { id } = useParams();
@@ -30,11 +31,11 @@ function CarDetails() {
 
   const [car, setCar] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-
     // Debug the id parameter
     console.log("Fetched ID from useParams:", id);
 
@@ -58,7 +59,7 @@ function CarDetails() {
           id: response.data._id,
           title: `${response.data.make} ${response.data.model}`,
           price: `₹${response.data.price.toLocaleString('en-IN')}`,
-          rentPrice: `₹${response.data.rent}/day`, // Adjust based on backend rent price if available
+          rentPrice: `₹${response.data.rent || 50000}/day`, // Fallback rent price
           images: response.data.images && response.data.images.length > 0 
             ? response.data.images.map(img => `http://localhost:5000${img}`)
             : [car2],
@@ -70,13 +71,13 @@ function CarDetails() {
           owners: response.data.owners,
           fuelType: response.data.fuelType,
           status: response.data.status,
-          category: determineCategory(response.data) // Reuse category logic
+          category: determineCategory(response.data)
         };
         setCar(fetchedCar);
       } catch (error) {
         console.error("Error fetching car:", error);
         setError("Failed to load car details. Please try again later.");
-        setCar(null); // Fallback to null if fetch fails
+        setCar(null);
       } finally {
         setIsLoading(false);
       }
@@ -90,10 +91,10 @@ function CarDetails() {
     if (['porsche', 'ferrari'].includes(make)) return 'Sports';
     if (['rolls-royce'].includes(make)) return 'Ultra Luxury';
     if (['aston martin', 'mustang'].includes(make)) return 'Grand Tourer';
-    if (['range rover'].includes(make)) return 'Grand Tourer'; // Or 'SUV'
-    if (['volvo'].includes(make)) return 'Supercar'; // Adjust as needed
+    if (['range rover'].includes(make)) return 'Grand Tourer';
+    if (['volvo'].includes(make)) return 'Supercar';
     if (['mercedes', 'c43 amg'].includes(make)) return 'Luxury';
-    return 'Luxury'; // Default category
+    return 'Luxury';
   };
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -123,17 +124,42 @@ function CarDetails() {
     });
   };
 
-  const handleEnquirySubmit = (e) => {
+  const handleEnquirySubmit = async (e) => {
     e.preventDefault();
-    console.log("Enquiry submitted:", enquiryData);
-    alert("Your enquiry has been submitted successfully! Our team will contact you soon.");
-    setShowEnquiryForm(false);
-    setEnquiryData({
-      name: "",
-      email: "",
-      phone: "",
-      message: ""
-    });
+    setIsSubmitting(true);
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(enquiryData.phone)) {
+      alert("Please enter a valid 10-digit phone number.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const enquiryPayload = {
+      user: enquiryData.name,
+      car: car.title,
+      message: enquiryData.message,
+      email: enquiryData.email,
+      phone: enquiryData.phone,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    try {
+      const response = await axios.post('http://localhost:5000/enquiries', enquiryPayload);
+      alert(response.data.message || "Your enquiry has been submitted successfully! Our team will contact you soon.");
+    } catch (error) {
+      console.error("Error submitting enquiry:", error);
+      alert("There was an error submitting your enquiry. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+      setShowEnquiryForm(false);
+      setEnquiryData({
+        name: "",
+        email: "",
+        phone: "",
+        message: ""
+      });
+    }
   };
 
   const handleOpenBookingForm = () => {
@@ -153,19 +179,38 @@ function CarDetails() {
     }));
   };
 
-  const handleBookingSubmit = (e) => {
+  const handleBookingSubmit = async (e) => {
     e.preventDefault();
-    alert(`Rental request submitted for ${car.title} from ${bookingData.pickupDate} to ${bookingData.returnDate}`);
-    setShowBookingForm(false);
-    console.log("Booking submitted:", bookingData);
-    setBookingData({
-      name: "",
-      phone: "",
-      email: "",
-      pickupDate: "",
-      returnDate: "",
-      specialRequests: ""
-    });
+    try {
+      const bookingPayload = {
+        ...bookingData,
+        car: car.title,
+        totalDays: calculateTotalDays(bookingData.pickupDate, bookingData.returnDate)
+      };
+
+      const response = await axios.post('http://localhost:5000/bookings', bookingPayload);
+      alert(response.data.message || `Rental request submitted for ${car.title}`);
+      
+      setShowBookingForm(false);
+      setBookingData({
+        name: "",
+        phone: "",
+        email: "",
+        pickupDate: "",
+        returnDate: "",
+        specialRequests: ""
+      });
+    } catch (error) {
+      console.error("Booking submission error:", error);
+      alert("Failed to submit booking. Please try again.");
+    }
+  };
+
+  const calculateTotalDays = (pickupDate, returnDate) => {
+    const pickup = new Date(pickupDate);
+    const returns = new Date(returnDate);
+    const timeDiff = Math.abs(returns.getTime() - pickup.getTime());
+    return Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
   };
 
   if (isLoading) return <div className="car-details-container">Loading...</div>;
@@ -379,15 +424,19 @@ function CarDetails() {
                 ></textarea>
               </div>
               
-              <button type="submit" className="buy-page-submit-button">
-                Submit Enquiry
+              <button 
+                type="submit" 
+                className="buy-page-submit-button"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Enquiry"}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* New Booking Form Modal - matching the style from RentPage */}
+      {/* New Booking Form Modal */}
       {showBookingForm && (
         <div className="booking-form-modal-overlay">
           <div className="booking-form-modal">
