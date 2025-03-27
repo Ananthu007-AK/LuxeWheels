@@ -6,7 +6,7 @@ const carSchema = new mongoose.Schema({
   year: { type: Number, required: true },
   price: { type: Number, required: true },
   rent: { type: Number, required: true },
-  status: { type: String, enum: ['available', 'reserved', 'sold', 'pending'], default: 'available' },
+  status: { type: String, enum: ['available', 'rented', 'sold', 'pending'], default: 'available' },
   images: { type: [String], default: [] }, // Array of image paths
   transmission: { type: String, enum: ['automatic', 'manual'], default: 'automatic' },
   kmDriven: { type: Number, required: true },

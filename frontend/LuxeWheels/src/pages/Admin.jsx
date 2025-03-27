@@ -4,10 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function Admin() {
-  // Initialize activeSection from localStorage, default to 'dashboard'
-  const [activeSection, setActiveSection] = useState(() => {
-    return localStorage.getItem('adminActiveSection') || 'dashboard';
-  });
+  const [activeSection, setActiveSection] = useState(() => localStorage.getItem('adminActiveSection') || 'dashboard');
   const [newCar, setNewCar] = useState({
     make: '',
     model: '',
@@ -20,7 +17,7 @@ function Admin() {
     kmDriven: '',
     colour: '',
     owners: '',
-    fuelType: 'petrol'
+    fuelType: 'petrol',
   });
   const [userListings, setUserListings] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
@@ -30,7 +27,6 @@ function Admin() {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch data when component mounts
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -44,18 +40,16 @@ function Admin() {
     fetchUsers();
   }, []);
 
-  // Persist activeSection to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('adminActiveSection', activeSection);
   }, [activeSection]);
 
-  // Fetch cars from backend
   const fetchCars = async () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5000/cars', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setCars(response.data);
     } catch (error) {
@@ -65,12 +59,11 @@ function Admin() {
     }
   };
 
-  // Fetch user listings from backend
   const fetchUserListings = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5000/listings/pending', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUserListings(response.data);
     } catch (error) {
@@ -78,56 +71,46 @@ function Admin() {
     }
   };
 
-  // Fetch enquiries from backend
   const fetchEnquiries = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5000/enquiries', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setEnquiries(response.data);
     } catch (error) {
       console.error('Error fetching enquiries:', error.response?.data || error.message);
-      setEnquiries([
-        { id: 1, user: 'Mike Johnson', car: 'BMW X5', message: 'Is this still available?', date: '2025-03-15' }
-      ]);
     }
   };
 
-  // Fetch rentals from backend
   const fetchRentals = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5000/rentals', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Fetched rentals:', response.data); // Debug log
       setRentals(response.data);
     } catch (error) {
       console.error('Error fetching rentals:', error.response?.data || error.message);
-      setRentals([
-        { id: 1, car: 'Mercedes S-Class 2023', renter: 'Sarah Williams', startDate: '2025-03-14', endDate: '2025-03-21', status: 'active' },
-        { id: 2, car: 'Tesla Model 3 2022', renter: 'James Brown', startDate: '2025-03-15', endDate: '2025-03-18', status: 'active' }
-      ]);
+      setRentals([]); // Empty array on error instead of hardcoded data
     }
   };
 
-  // Fetch users from backend (assuming backend excludes admins)
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
       const response = await axios.get('http://localhost:5000/users', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Fetched users:', response.data);
       const mappedUsers = response.data.map(user => ({
-        id: user.id,
+        id: user._id,
         name: user.name,
         email: user.email,
-        registered: user.registered,
+        registered: user.registered || new Date().toISOString().split('T')[0],
         phone: user.phone || 'N/A',
         address: user.address || 'N/A',
-        status: user.status
+        status: user.status || 'active',
       }));
       setUsers(mappedUsers);
     } catch (error) {
@@ -151,15 +134,25 @@ function Admin() {
       const response = await axios.post('http://localhost:5000/cars/add', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       setCars([...cars, response.data.car]);
       setNewCar({
-        make: '', model: '', year: '', price: '', rent: '' ,status: 'available', images: [],
-        transmission: 'automatic', kmDriven: '', colour: '', owners: '', fuelType: 'petrol'
+        make: '',
+        model: '',
+        year: '',
+        price: '',
+        rent: '',
+        status: 'available',
+        images: [],
+        transmission: 'automatic',
+        kmDriven: '',
+        colour: '',
+        owners: '',
+        fuelType: 'petrol',
       });
-      setActiveSection('dashboard'); // Switch to dashboard after adding car
+      setActiveSection('dashboard');
     } catch (error) {
       console.error('Error adding car:', error.response?.data || error.message);
       alert('Failed to add car. Please try again.');
@@ -169,12 +162,10 @@ function Admin() {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const maxImages = 5;
-    
     if (files.length + newCar.images.length > maxImages) {
       alert(`You can upload a maximum of ${maxImages} images`);
       return;
     }
-
     const validImages = files.filter(file => {
       if (!file.type.startsWith('image/')) {
         alert(`"${file.name}" is not an image file`);
@@ -186,7 +177,6 @@ function Admin() {
       }
       return true;
     });
-
     setNewCar({ ...newCar, images: [...newCar.images, ...validImages] });
   };
 
@@ -199,7 +189,7 @@ function Admin() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.patch(`http://localhost:5000/listings/${id}/approve`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (response.data.success) {
         setUserListings(userListings.filter(listing => listing._id !== id));
@@ -217,7 +207,7 @@ function Admin() {
     try {
       const token = localStorage.getItem('token');
       await axios.patch(`http://localhost:5000/listings/${id}/reject`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUserListings(userListings.filter(listing => listing._id !== id));
       fetchUserListings();
@@ -231,22 +221,19 @@ function Admin() {
     try {
       const token = localStorage.getItem('token');
       await axios.patch(`http://localhost:5000/rentals/${id}/complete`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      fetchRentals();
+      fetchRentals(); // Refresh rentals after completion
     } catch (error) {
       console.error('Error completing rental:', error.response?.data || error.message);
-      setRentals(rentals.map(rental =>
-        rental.id === id ? { ...rental, status: 'completed' } : rental
-      ));
+      alert('Failed to complete rental. Please try again.');
     }
   };
 
   const handleLogout = () => {
-    console.log('Logging out...');
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    localStorage.removeItem('adminActiveSection'); // Reset section on logout
+    localStorage.removeItem('adminActiveSection');
     setUsers([]);
     alert('You have been logged out');
     navigate('/login');
@@ -282,7 +269,7 @@ function Admin() {
                 </thead>
                 <tbody>
                   {cars.map(car => (
-                    <tr key={car._id || car.id}>
+                    <tr key={car._id}>
                       <td>
                         {car.images && car.images.length > 0 ? (
                           <div className="admin-image-preview-container">
@@ -327,6 +314,7 @@ function Admin() {
           <section className="admin-section-card">
             <h2>Add New Car</h2>
             <form onSubmit={handleAddCar} className="admin-car-form">
+              {/* Form fields remain unchanged */}
               <div className="admin-form-row">
                 <input
                   type="text"
@@ -366,7 +354,7 @@ function Admin() {
                   type="number"
                   placeholder="Rent"
                   value={newCar.rent}
-                  onChange={(e)=> setNewCar({ ...newCar, rent: e.target.value })}
+                  onChange={(e) => setNewCar({ ...newCar, rent: e.target.value })}
                   className="admin-input-field"
                   required
                 />
@@ -429,13 +417,13 @@ function Admin() {
                     <div className="admin-image-preview">
                       {newCar.images.map((img, index) => (
                         <div key={index} className="admin-image-preview-item">
-                          <img 
-                            src={img instanceof File ? URL.createObjectURL(img) : img} 
-                            alt={`Preview ${index + 1}`} 
-                            className="admin-car-image" 
+                          <img
+                            src={img instanceof File ? URL.createObjectURL(img) : img}
+                            alt={`Preview ${index + 1}`}
+                            className="admin-car-image"
                           />
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => removeImage(index)}
                             className="admin-remove-image-btn"
                           >
@@ -559,13 +547,13 @@ function Admin() {
                 </thead>
                 <tbody>
                   {enquiries.map(enquiry => (
-                    <tr key={enquiry.id}>
-                      <td>{enquiry.user}</td>
+                    <tr key={enquiry._id || enquiry.id}>
+                      <td>{enquiry.user || enquiry.name}</td>
                       <td>{enquiry.car}</td>
                       <td>{enquiry.message}</td>
                       <td>{enquiry.email}</td>
                       <td>{enquiry.phone}</td>
-                      <td>{enquiry.date}</td>
+                      <td>{new Date(enquiry.date || enquiry.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -593,20 +581,20 @@ function Admin() {
                 </thead>
                 <tbody>
                   {rentals.map(rental => (
-                    <tr key={rental.id}>
-                      <td>{rental.car}</td>
-                      <td>{rental.renter}</td>
-                      <td>{rental.startDate}</td>
-                      <td>{rental.endDate}</td>
+                    <tr key={rental._id}>
+                      <td>{rental.carId ? `${rental.carId.make} ${rental.carId.model}` : 'Unknown Car'}</td>
+                      <td>{rental.name}</td>
+                      <td>{new Date(rental.pickupDate).toLocaleDateString()}</td>
+                      <td>{new Date(rental.returnDate).toLocaleDateString()}</td>
                       <td>
                         <span className={`admin-rental-status admin-status-${rental.status}`}>
                           {rental.status}
                         </span>
                       </td>
                       <td>
-                        {rental.status === 'active' && (
-                          <button 
-                            onClick={() => completeRental(rental.id)}
+                        {rental.status === 'pending' && (
+                          <button
+                            onClick={() => completeRental(rental._id)}
                             className="admin-action-btn"
                           >
                             Mark Completed
@@ -643,9 +631,9 @@ function Admin() {
                     <tr key={user.id}>
                       <td>{user.name}</td>
                       <td>{user.email}</td>
-                      <td>{user.registered}</td>
-                      <td>{user.phone || 'N/A'}</td>
-                      <td>{user.address || 'N/A'}</td>
+                      <td>{new Date(user.registered).toLocaleDateString()}</td>
+                      <td>{user.phone}</td>
+                      <td>{user.address}</td>
                       <td>
                         <span className={`admin-rental-status admin-status-${user.status}`}>
                           {user.status}
@@ -669,46 +657,43 @@ function Admin() {
         <h2>Admin Panel</h2>
         <nav>
           <ul className="admin-nav-list">
-            <li 
+            <li
               className={`admin-nav-item ${activeSection === 'dashboard' ? 'admin-nav-active' : ''}`}
               onClick={() => setActiveSection('dashboard')}
             >
               Dashboard
             </li>
-            <li 
+            <li
               className={`admin-nav-item ${activeSection === 'addCar' ? 'admin-nav-active' : ''}`}
               onClick={() => setActiveSection('addCar')}
             >
               Add New Car
             </li>
-            <li 
+            <li
               className={`admin-nav-item ${activeSection === 'userListings' ? 'admin-nav-active' : ''}`}
               onClick={() => setActiveSection('userListings')}
             >
               User Listings
             </li>
-            <li 
+            <li
               className={`admin-nav-item ${activeSection === 'enquiries' ? 'admin-nav-active' : ''}`}
               onClick={() => setActiveSection('enquiries')}
             >
               Enquiries
             </li>
-            <li 
+            <li
               className={`admin-nav-item ${activeSection === 'rentals' ? 'admin-nav-active' : ''}`}
               onClick={() => setActiveSection('rentals')}
             >
               Rentals
             </li>
-            <li 
+            <li
               className={`admin-nav-item ${activeSection === 'users' ? 'admin-nav-active' : ''}`}
               onClick={() => setActiveSection('users')}
             >
               Users
             </li>
-            <li 
-              className="admin-nav-item admin-logout-btn"
-              onClick={handleLogout}
-            >
+            <li className="admin-nav-item admin-logout-btn" onClick={handleLogout}>
               Logout
             </li>
           </ul>

@@ -106,7 +106,7 @@ const RentPage = () => {
     setIsLoading(true);
     try {
       const rentalData = {
-        carId: selectedCar.id,
+        carId: selectedCar._id,
         ...formData
       };
       const response = await axios.post('http://localhost:5000/rentals', rentalData);
