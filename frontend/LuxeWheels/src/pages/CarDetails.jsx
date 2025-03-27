@@ -28,7 +28,7 @@ function CarDetails() {
   });
   const [car, setCar] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false); // For both enquiry and booking
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
@@ -49,14 +49,14 @@ function CarDetails() {
     const fetchCar = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get(`http://localhost:5000/cars/${id}`); // Updated port
+        const response = await axios.get(`http://localhost:5000/cars/${id}`); // Update to 3003 if needed
         const fetchedCar = {
           id: response.data._id,
           title: `${response.data.make} ${response.data.model}`,
           price: `₹${response.data.price?.toLocaleString('en-IN') || "N/A"}`,
           rentPrice: `₹${response.data.rent?.toLocaleString('en-IN') || 50000}/day`,
           images: response.data.images?.length > 0 
-            ? response.data.images.map(img => `http://localhost:5000${img}`) // Updated port
+            ? response.data.images.map(img => `http://localhost:5000${img}`) // Update to 3003 if needed
             : [car2],
           description: `Experience luxury with this ${response.data.make} ${response.data.model}.`,
           year: response.data.year,
@@ -68,7 +68,7 @@ function CarDetails() {
           status: response.data.status,
           category: determineCategory(response.data),
         };
-        console.log("Fetched car:", fetchedCar); // Debug log
+        console.log("Fetched car:", fetchedCar);
         setCar(fetchedCar);
       } catch (error) {
         console.error("Error fetching car:", error);
@@ -138,7 +138,7 @@ function CarDetails() {
     };
 
     try {
-      const response = await axios.post('http://localhost:5000/enquiries', enquiryPayload); // Updated port
+      const response = await axios.post('http://localhost:5000/enquiries', enquiryPayload); // Update to 3003 if needed
       alert(response.data.message || "Your enquiry has been submitted successfully!");
     } catch (error) {
       console.error("Error submitting enquiry:", error);
@@ -151,6 +151,10 @@ function CarDetails() {
   };
 
   const handleOpenBookingForm = () => {
+    if (car.status !== 'available') {
+      alert('This car is not available for booking.');
+      return;
+    }
     setShowBookingForm(true);
     setSelectedCar(car);
   };
@@ -170,7 +174,7 @@ function CarDetails() {
 
     try {
       const bookingPayload = {
-        carId: car.id, // Use car.id (MongoDB _id)
+        carId: car.id,
         name: bookingData.name,
         phone: bookingData.phone,
         email: bookingData.email,
@@ -178,9 +182,9 @@ function CarDetails() {
         returnDate: bookingData.returnDate,
         specialRequests: bookingData.specialRequests || "",
       };
-      console.log("Sending booking payload:", bookingPayload); // Debug log
+      console.log("Sending booking payload:", bookingPayload);
 
-      const response = await axios.post('http://localhost:5000/rentals', bookingPayload); // Updated port
+      const response = await axios.post('http://localhost:5000/rentals', bookingPayload); // Update to 3003 if needed
       alert(response.data.message || `Rental request submitted for ${car.title}`);
 
       setShowBookingForm(false);
@@ -192,6 +196,14 @@ function CarDetails() {
         returnDate: "",
         specialRequests: "",
       });
+      // Refresh car data to reflect updated status
+      const updatedResponse = await axios.get(`http://localhost:5000/cars/${id}`);
+      const updatedCar = {
+        ...car,
+        status: updatedResponse.data.status,
+      };
+      setCar(updatedCar);
+      navigate('/'); // Navigate back to RentPage
     } catch (error) {
       console.error("Booking submission error:", error.response?.data || error);
       alert(error.response?.data?.message || "Failed to submit booking.");
@@ -292,8 +304,9 @@ function CarDetails() {
                     <button 
                       onClick={handleOpenBookingForm} 
                       className="action-button primary"
+                      disabled={car.status !== 'available'}
                     >
-                      Reserve Now
+                      {car.status === 'available' ? 'Reserve Now' : 'Not Available'}
                     </button>
                   </div>
                 </div>
@@ -314,7 +327,12 @@ function CarDetails() {
             <div className="spec-item"><span className="spec-label">Colour</span><span className="spec-value">{car.colour}</span></div>
             <div className="spec-item"><span className="spec-label">Owners</span><span className="spec-value">{car.owners}</span></div>
             <div className="spec-item"><span className="spec-label">Fuel Type</span><span className="spec-value">{car.fuelType}</span></div>
-            <div className="spec-item"><span className="spec-label">Status</span><span className="spec-value">{car.status}</span></div>
+            <div className="spec-item">
+              <span className="spec-label">Status</span>
+              <span className={`spec-value ${car.status === 'available' ? 'available' : 'not-available'}`}>
+                {car.status === 'available' ? 'Available' : 'Not Available'}
+              </span>
+            </div>
           </div>
         </div>
       </div>

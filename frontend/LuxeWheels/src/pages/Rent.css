@@ -801,3 +801,26 @@
 .spec-data {
   color: #555;
 }
+
+
+.vehicle-tile {
+  transition: opacity 0.3s ease;
+}
+
+.vehicle-info-brief {
+  padding: 10px;
+}
+
+.vehicle-status.available {
+  color: #28a745; /* Green */
+  font-weight: bold;
+}
+
+.vehicle-status.not-available {
+  color: #dc3545; /* Red */
+  font-weight: bold;
+}
+
+.details-button {
+  margin-top: 10px;
+}
