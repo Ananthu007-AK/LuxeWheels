@@ -89,11 +89,25 @@ function Admin() {
       const response = await axios.get('http://localhost:5000/rentals', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Fetched rentals:', response.data); // Debug log
+      console.log('Fetched rentals:', response.data);
       setRentals(response.data);
     } catch (error) {
       console.error('Error fetching rentals:', error.response?.data || error.message);
-      setRentals([]); // Empty array on error instead of hardcoded data
+      setRentals([]);
+    }
+  };
+
+  const approveRental = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/rentals/${id}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchRentals(); // Refresh rentals
+      fetchCars(); // Refresh car list to reflect updated status
+    } catch (error) {
+      console.error('Error approving rental:', error.response?.data || error.message);
+      alert('Failed to approve rental. Please try again.');
     }
   };
 
@@ -223,7 +237,8 @@ function Admin() {
       await axios.patch(`http://localhost:5000/rentals/${id}/complete`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchRentals(); // Refresh rentals after completion
+      fetchRentals(); // Refresh rentals
+      fetchCars(); // Refresh car list to reflect updated status
     } catch (error) {
       console.error('Error completing rental:', error.response?.data || error.message);
       alert('Failed to complete rental. Please try again.');
@@ -561,53 +576,60 @@ function Admin() {
             )}
           </section>
         );
-      case 'rentals':
-        return (
-          <section className="admin-section-card">
-            <h2>Active Rentals</h2>
-            {rentals.length === 0 ? (
-              <div className="admin-empty-state">No active rentals.</div>
-            ) : (
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Car</th>
-                    <th>Renter</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rentals.map(rental => (
-                    <tr key={rental._id}>
-                      <td>{rental.carId ? `${rental.carId.make} ${rental.carId.model}` : 'Unknown Car'}</td>
-                      <td>{rental.name}</td>
-                      <td>{new Date(rental.pickupDate).toLocaleDateString()}</td>
-                      <td>{new Date(rental.returnDate).toLocaleDateString()}</td>
-                      <td>
-                        <span className={`admin-rental-status admin-status-${rental.status}`}>
-                          {rental.status}
-                        </span>
-                      </td>
-                      <td>
-                        {rental.status === 'pending' && (
-                          <button
-                            onClick={() => completeRental(rental._id)}
-                            className="admin-action-btn"
-                          >
-                            Mark Completed
-                          </button>
-                        )}
-                      </td>
+        case 'rentals':
+          return (
+            <section className="admin-section-card">
+              <h2>Active Rentals</h2>
+              {rentals.length === 0 ? (
+                <div className="admin-empty-state">No active rentals.</div>
+              ) : (
+                <table className="admin-data-table">
+                  <thead>
+                    <tr>
+                      <th>Car</th>
+                      <th>Renter</th>
+                      <th>Start Date</th>
+                      <th>End Date</th>
+                      <th>Status</th>
+                      <th>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-        );
+                  </thead>
+                  <tbody>
+                    {rentals.map(rental => (
+                      <tr key={rental._id}>
+                        <td>{rental.carId ? `${rental.carId.make} ${rental.carId.model}` : 'Unknown Car'}</td>
+                        <td>{rental.name}</td>
+                        <td>{new Date(rental.pickupDate).toLocaleDateString()}</td>
+                        <td>{new Date(rental.returnDate).toLocaleDateString()}</td>
+                        <td>
+                          <span className={`admin-rental-status admin-status-${rental.status}`}>
+                            {rental.status}
+                          </span>
+                        </td>
+                        <td>
+                          {rental.status === 'pending' ? (
+                            <button
+                              onClick={() => approveRental(rental._id)}
+                              className="admin-action-btn admin-approve-btn"
+                            >
+                              Approve
+                            </button>
+                          ) : rental.status === 'approved' ? (
+                            <button
+                              onClick={() => completeRental(rental._id)}
+                              className="admin-action-btn"
+                            >
+                              Mark Completed
+                            </button>
+                          ) : null}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          );
       case 'users':
         return (
           <section className="admin-section-card">

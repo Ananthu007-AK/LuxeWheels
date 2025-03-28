@@ -171,7 +171,7 @@ function CarDetails() {
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+  
     try {
       const bookingPayload = {
         carId: car.id,
@@ -181,12 +181,13 @@ function CarDetails() {
         pickupDate: bookingData.pickupDate,
         returnDate: bookingData.returnDate,
         specialRequests: bookingData.specialRequests || "",
+        status: "pending", // Explicitly set status as pending
       };
       console.log("Sending booking payload:", bookingPayload);
-
-      const response = await axios.post('http://localhost:5000/rentals', bookingPayload); // Update to 3003 if needed
-      alert(response.data.message || `Rental request submitted for ${car.title}`);
-
+  
+      const response = await axios.post('http://localhost:5000/rentals', bookingPayload);
+      alert(response.data.message || `Rental request submitted for ${car.title}. Awaiting admin approval.`);
+  
       setShowBookingForm(false);
       setBookingData({
         name: "",
@@ -196,14 +197,7 @@ function CarDetails() {
         returnDate: "",
         specialRequests: "",
       });
-      // Refresh car data to reflect updated status
-      const updatedResponse = await axios.get(`http://localhost:5000/cars/${id}`);
-      const updatedCar = {
-        ...car,
-        status: updatedResponse.data.status,
-      };
-      setCar(updatedCar);
-      navigate('/'); // Navigate back to RentPage
+      // Do NOT update car status here; wait for admin approval
     } catch (error) {
       console.error("Booking submission error:", error.response?.data || error);
       alert(error.response?.data?.message || "Failed to submit booking.");
