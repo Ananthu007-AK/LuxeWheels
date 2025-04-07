@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const rentalSchema = new mongoose.Schema({
   carId: { type: mongoose.Schema.Types.ObjectId, ref: 'Car', required: true },
+  userId: { // Add user reference
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   name: { type: String, required: true },
   phone: { type: String, required: true },
   email: { type: String, required: true },

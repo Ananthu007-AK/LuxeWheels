@@ -181,32 +181,29 @@ function CarDetails() {
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+  
+    const bookingPayload = {
+      carId: car.id,
+      name: bookingData.name,
+      phone: bookingData.phone,
+      email: bookingData.email,
+      pickupDate: bookingData.pickupDate,
+      returnDate: bookingData.returnDate,
+      specialRequests: bookingData.specialRequests || "",
+      status: "pending",
+    };
+  
+    console.log("Booking Payload:", bookingPayload); // Log the payload
+  
     try {
-      const bookingPayload = {
-        carId: car.id,
-        name: bookingData.name,
-        phone: bookingData.phone,
-        email: bookingData.email,
-        pickupDate: bookingData.pickupDate,
-        returnDate: bookingData.returnDate,
-        specialRequests: bookingData.specialRequests || "",
-        status: "pending",
-      };
-      console.log("Sending booking payload:", bookingPayload);
-
-      const response = await axios.post("http://localhost:5000/rentals", bookingPayload);
-      alert(response.data.message || `Rental request submitted for ${car.title}. Awaiting admin approval.`);
-
-      setShowBookingForm(false);
-      setBookingData({
-        name: "",
-        phone: "",
-        email: "",
-        pickupDate: "",
-        returnDate: "",
-        specialRequests: "",
+      const token = localStorage.getItem('token');
+      const response = await axios.post("http://localhost:5000/rentals", bookingPayload, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Ensure the token is included
+        },
       });
+      alert(response.data.message || `Rental request submitted for ${car.title}. Awaiting admin approval.`);
+      // Reset form or perform other actions
     } catch (error) {
       console.error("Booking submission error:", error.response?.data || error);
       alert(error.response?.data?.message || "Failed to submit booking.");

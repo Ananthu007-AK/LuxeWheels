@@ -89,7 +89,6 @@ function Admin() {
       const response = await axios.get('http://localhost:5000/rentals', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Fetched rentals:', response.data);
       setRentals(response.data);
     } catch (error) {
       console.error('Error fetching rentals:', error.response?.data || error.message);

@@ -13,19 +13,19 @@ function Profile() {
     email: "",
     phone: "",
     address: "",
-    profilePhoto: userPlaceholder
+    profilePhoto: userPlaceholder,
   });
+  const [rentals, setRentals] = useState([]); // New state for rentals
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({ ...userData });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   const fileInputRef = useRef(null);
 
-  // Fetch user data or reset on token change
   useEffect(() => {
     const username = localStorage.getItem("username");
     const token = localStorage.getItem("token");
@@ -33,26 +33,27 @@ function Profile() {
     if (username && token) {
       setUser(username);
       fetchUserData();
+      fetchRentals(); // Fetch rentals on mount
     } else {
-      // Reset state on logout (no token)
       setUser(null);
       setUserData({
         name: "",
         email: "",
         phone: "",
         address: "",
-        profilePhoto: userPlaceholder
+        profilePhoto: userPlaceholder,
       });
       setFormData({
         name: "",
         email: "",
         phone: "",
         address: "",
-        profilePhoto: userPlaceholder
+        profilePhoto: userPlaceholder,
       });
+      setRentals([]); // Reset rentals
       setIsLoading(false);
     }
-  }, []); // Empty dependency array to run only on mount
+  }, []); // Empty dependency array, runs only on mount
 
   const fetchUserData = async () => {
     try {
@@ -61,9 +62,7 @@ function Profile() {
       if (!token) throw new Error("No token found");
 
       const response = await axios.get("http://localhost:5000/user/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = response.data;
@@ -72,14 +71,14 @@ function Profile() {
         email: data.email || "",
         phone: data.phone || "",
         address: data.address || "",
-        profilePhoto: data.profilePhoto || userPlaceholder
+        profilePhoto: data.profilePhoto || userPlaceholder,
       });
       setFormData({
         name: data.name || "",
         email: data.email || "",
         phone: data.phone || "",
         address: data.address || "",
-        profilePhoto: data.profilePhoto || userPlaceholder
+        profilePhoto: data.profilePhoto || userPlaceholder,
       });
     } catch (error) {
       console.error("Error fetching user data:", error.response?.data || error.message);
@@ -88,7 +87,21 @@ function Profile() {
     }
   };
 
-  // Handle logout from Navbar
+  const fetchRentals = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+  
+      const response = await axios.get("http://localhost:5000/rentals/user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      setRentals(response.data); // Assuming response.data is an array of rentals
+    } catch (error) {
+      console.error("Error fetching rentals:", error.response?.data || error.message);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
@@ -98,43 +111,39 @@ function Profile() {
       email: "",
       phone: "",
       address: "",
-      profilePhoto: userPlaceholder
+      profilePhoto: userPlaceholder,
     });
     setFormData({
       name: "",
       email: "",
       phone: "",
       address: "",
-      profilePhoto: userPlaceholder
+      profilePhoto: userPlaceholder,
     });
+    setRentals([]);
   };
 
   const handleEditToggle = async () => {
     if (isEditing) {
       try {
         const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found");
-
         const response = await axios.put(
           "http://localhost:5000/user/update",
           {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
-            address: formData.address
+            address: formData.address,
           },
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
+              "Content-Type": "application/json",
+            },
           }
         );
 
-        setUserData({
-          ...formData,
-          profilePhoto: userData.profilePhoto
-        });
+        setUserData({ ...formData, profilePhoto: userData.profilePhoto });
         alert(response.data.msg);
       } catch (error) {
         console.error("Error updating profile:", error.response?.data || error.message);
@@ -147,18 +156,12 @@ function Profile() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
-    setPasswordData({
-      ...passwordData,
-      [name]: value
-    });
+    setPasswordData({ ...passwordData, [name]: value });
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -174,13 +177,13 @@ function Profile() {
         "http://localhost:5000/user/change-password",
         {
           currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword
+          newPassword: passwordData.newPassword,
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -188,7 +191,7 @@ function Profile() {
       setPasswordData({
         currentPassword: "",
         newPassword: "",
-        confirmPassword: ""
+        confirmPassword: "",
       });
     } catch (error) {
       console.error("Error changing password:", error.response?.data || error.message);
@@ -196,9 +199,7 @@ function Profile() {
     }
   };
 
-  const handlePhotoClick = () => {
-    fileInputRef.current.click();
-  };
+  const handlePhotoClick = () => fileInputRef.current.click();
 
   const handlePhotoChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -207,11 +208,7 @@ function Profile() {
 
       reader.onload = async (event) => {
         const newProfilePhoto = event.target.result;
-
-        setFormData({
-          ...formData,
-          profilePhoto: newProfilePhoto
-        });
+        setFormData({ ...formData, profilePhoto: newProfilePhoto });
 
         if (!isEditing) {
           try {
@@ -225,14 +222,14 @@ function Profile() {
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
-                  "Content-Type": "multipart/form-data"
-                }
+                  "Content-Type": "multipart/form-data",
+                },
               }
             );
 
             setUserData({
               ...userData,
-              profilePhoto: response.data.profilePhoto || newProfilePhoto
+              profilePhoto: response.data.profilePhoto || newProfilePhoto,
             });
           } catch (error) {
             console.error("Error updating profile photo:", error.response?.data || error.message);
@@ -246,61 +243,29 @@ function Profile() {
   };
 
   const renderUserDetails = () => {
-    if (isLoading) {
-      return <div className="profile-loading">Loading user data...</div>;
-    }
+    if (isLoading) return <div className="profile-loading">Loading user data...</div>;
+    if (!user) return <div className="profile-loading">Please log in to view your profile.</div>;
 
-    if (!user) {
-      return <div className="profile-loading">Please log in to view your profile.</div>;
-    }
-
-    if (isEditing) {
-      return (
-        <form className="profile-edit-form">
-          <div className="profile-form-group">
-            <label htmlFor="name">Full Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="profile-form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="profile-form-group">
-            <label htmlFor="phone">Phone</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="profile-form-group">
-            <label htmlFor="address">Address</label>
-            <textarea
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-            ></textarea>
-          </div>
-        </form>
-      );
-    }
-
-    return (
+    return isEditing ? (
+      <form className="profile-edit-form">
+        <div className="profile-form-group">
+          <label htmlFor="name">Full Name</label>
+          <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} />
+        </div>
+        <div className="profile-form-group">
+          <label htmlFor="email">Email</label>
+          <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} />
+        </div>
+        <div className="profile-form-group">
+          <label htmlFor="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} />
+        </div>
+        <div className="profile-form-group">
+          <label htmlFor="address">Address</label>
+          <textarea id="address" name="address" value={formData.address} onChange={handleInputChange}></textarea>
+        </div>
+      </form>
+    ) : (
       <div className="profile-details-container">
         <div className="profile-detail-item">
           <span className="profile-detail-label">Name:</span>
@@ -323,13 +288,8 @@ function Profile() {
   };
 
   const renderPasswordChange = () => {
-    if (isLoading) {
-      return <div className="profile-loading">Loading user data...</div>;
-    }
-
-    if (!user) {
-      return <div className="profile-loading">Please log in to change your password.</div>;
-    }
+    if (isLoading) return <div className="profile-loading">Loading user data...</div>;
+    if (!user) return <div className="profile-loading">Please log in to change your password.</div>;
 
     return (
       <form className="profile-password-form" onSubmit={handlePasswordSubmit}>
@@ -373,10 +333,47 @@ function Profile() {
     );
   };
 
+  const renderRentals = () => {
+    if (isLoading) return <div className="profile-loading">Loading rentals...</div>;
+    if (!user) return <div className="profile-loading">Please log in to view your rentals.</div>;
+    if (rentals.length === 0) return <div className="profile-loading">No rentals found.</div>;
+
+    return (
+      <div className="profile-rentals-container">
+        {rentals.map((rental) => (
+          <div key={rental._id} className="profile-rental-item">
+            <div className="profile-rental-detail">
+              <span className="profile-detail-label">Car:</span>
+              <span className="profile-detail-value">{rental.carId.title}</span>
+            </div>
+            <div className="profile-rental-detail">
+              <span className="profile-detail-label">Pick-up Date:</span>
+              <span className="profile-detail-value">{new Date(rental.pickupDate).toLocaleDateString()}</span>
+            </div>
+            <div className="profile-rental-detail">
+              <span className="profile-detail-label">Return Date:</span>
+              <span className="profile-detail-value">{new Date(rental.returnDate).toLocaleDateString()}</span>
+            </div>
+            <div className="profile-rental-detail">
+              <span className="profile-detail-label">Status:</span>
+              <span className={`profile-detail-value ${rental.status}`}>{rental.status}</span>
+            </div>
+            {rental.specialRequests && (
+              <div className="profile-rental-detail">
+                <span className="profile-detail-label">Special Requests:</span>
+                <span className="profile-detail-value">{rental.specialRequests}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <>
       <title>Profile - Luxewheels</title>
-      <Navbar user={user} setUser={setUser} onLogout={handleLogout} /> {/* Pass logout handler */}
+      <Navbar user={user} setUser={setUser} onLogout={handleLogout} />
 
       <div className="profile-container">
         <div className="profile-header">
@@ -426,6 +423,12 @@ function Profile() {
               >
                 Change Password
               </button>
+              <button
+                className={`profile-nav-item ${activeTab === "rentals" ? "active" : ""}`}
+                onClick={() => setActiveTab("rentals")}
+              >
+                My Rentals
+              </button>
             </div>
           </div>
 
@@ -450,6 +453,15 @@ function Profile() {
                   <h2>Change Password</h2>
                 </div>
                 {renderPasswordChange()}
+              </div>
+            )}
+
+            {activeTab === "rentals" && (
+              <div className="profile-section">
+                <div className="profile-section-header">
+                  <h2>My Rentals</h2>
+                </div>
+                {renderRentals()}
               </div>
             )}
           </div>

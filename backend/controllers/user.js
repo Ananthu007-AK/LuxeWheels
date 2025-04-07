@@ -80,7 +80,7 @@ const loginController = async (req, res) => {
 // Get User Profile
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.userId).select('-password');
+        const user = await User.findById(req.user._id).select('-password');
         if (!user) return res.status(404).json({ msg: "User not found" });
 
         return res.json({

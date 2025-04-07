@@ -332,3 +332,22 @@
       align-items: flex-start;
     }
   }
+
+
+
+  .profile-rentals-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .profile-rental-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+  }
+  .profile-rental-detail {
+    margin-bottom: 10px;
+  }
+  .profile-detail-value.pending { color: orange; }
+  .profile-detail-value.approved { color: green; }
+  .profile-detail-value.rejected { color: red; }
