@@ -98,43 +98,37 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
-        const { name, email, phone, address } = req.body;
-
-        // Validate required fields (optional, adjust as needed)
-        if (!name || !email) {
-            return res.status(400).json({ msg: "Name and email are required" });
+      const { name, email, phone, address } = req.body;
+      if (!name || !email) {
+        return res.status(400).json({ msg: "Name and email are required" });
+      }
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user._id, // Fixed to match verifyToken
+        {
+          username: name,
+          email,
+          phone,
+          address,
+        },
+        { new: true, runValidators: true }
+      ).select('-password');
+      if (!updatedUser) {
+        return res.status(404).json({ msg: "User not found" });
+      }
+      return res.status(200).json({
+        msg: "Profile updated successfully",
+        user: {
+          name: updatedUser.username,
+          email: updatedUser.email,
+          phone: updatedUser.phone || '',
+          address: updatedUser.address || ''
         }
-
-        // Update user in the database
-        const updatedUser = await User.findByIdAndUpdate(
-            req.userId, // From verifyToken middleware
-            {
-                username: name, // Assuming username is the "name" field
-                email,
-                phone, // Add if in schema
-                address // Add if in schema
-            },
-            { new: true, runValidators: true } // Return updated doc, validate schema
-        ).select('-password');
-
-        if (!updatedUser) {
-            return res.status(404).json({ msg: "User not found" });
-        }
-
-        return res.status(200).json({
-            msg: "Profile updated successfully",
-            user: {
-                name: updatedUser.username,
-                email: updatedUser.email,
-                phone: updatedUser.phone || '',
-                address: updatedUser.address || ''
-            }
-        });
+      });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ msg: "Server error" });
+      console.error(error);
+      return res.status(500).json({ msg: "Server error" });
     }
-};
+  };
 
 
 // Admin Dashboard

@@ -127,8 +127,15 @@ function Profile() {
     if (isEditing) {
       try {
         const token = localStorage.getItem("token");
+        console.log('Updating profile with token:', token);
+        console.log('Form data:', {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+        });
         const response = await axios.put(
-          "http://localhost:5000/user/update",
+          "http://localhost:5000/users/update",
           {
             name: formData.name,
             email: formData.email,
@@ -142,7 +149,7 @@ function Profile() {
             },
           }
         );
-
+        console.log('Update response:', response.data);
         setUserData({ ...formData, profilePhoto: userData.profilePhoto });
         alert(response.data.msg);
       } catch (error) {

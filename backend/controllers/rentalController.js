@@ -78,24 +78,54 @@ exports.getUserRentals = async (req, res) => {
   }
 };
 
-exports.completeRental = async (req, res) => {
+const completeRental = async (req, res) => {
   try {
-    const rental = await Rental.findById(req.params.id);
-    if (!rental) return res.status(404).json({ message: "Rental not found" });
+    const rentalId = req.params.id;
 
-    // Update rental status (align with frontend expectation)
-    rental.status = "approved"; // Changed from "completed" to match frontend
-    await rental.save();
+    // Find the rental by ID and update its status to 'completed'
+    const rental = await Rental.findByIdAndUpdate(
+      rentalId,
+      { status: 'completed' },
+      { new: true } // Return the updated document
+    );
 
-    // Update car status back to available
-    const car = await Car.findById(rental.carId);
-    if (!car) return res.status(404).json({ message: "Associated car not found" });
-    car.status = "available";
-    await car.save();
+    if (!rental) {
+      return res.status(404).json({ success: false, message: 'Rental not found' });
+    }
 
-    res.status(200).json({ message: "Rental completed successfully", success: true });
+    // Optionally, update the car's status back to 'available' if tied to a car
+    if (rental.carId) {
+      await Car.findByIdAndUpdate(rental.carId, { status: 'available' });
+    }
+
+    res.status(200).json({ success: true, rental });
   } catch (error) {
-    console.error("Error completing rental:", error);
-    res.status(500).json({ message: "Server error while completing rental" });
+    console.error('Error completing rental:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
+const approveRental = async (req, res) => {
+  try {
+    const rentalId = req.params.id;
+
+    // Find the rental by ID and update its status to 'approved'
+    const rental = await Rental.findByIdAndUpdate(
+      rentalId,
+      { status: 'approved' },
+      { new: true } // Return the updated document
+    );
+
+    if (!rental) {
+      return res.status(404).json({ success: false, message: 'Rental not found' });
+    }
+
+    res.status(200).json({ success: true, rental });
+  } catch (error) {
+    console.error('Error approving rental:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+exports.approveRental = approveRental;
+exports.completeRental = completeRental;

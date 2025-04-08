@@ -111,13 +111,16 @@ function Admin() {
   };
 
   const fetchUsers = async () => {
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
+      console.log('Fetching users with token:', token);
       const response = await axios.get('http://localhost:5000/users', {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Raw users response:', response.data);
       const mappedUsers = response.data.map(user => ({
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         registered: user.registered || new Date().toISOString().split('T')[0],
@@ -125,12 +128,26 @@ function Admin() {
         address: user.address || 'N/A',
         status: user.status || 'active',
       }));
+      console.log('Mapped users:', mappedUsers);
       setUsers(mappedUsers);
     } catch (error) {
-      console.error('Error fetching users:', error.response?.data || error.message);
+      console.error('Error fetching users:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+      if (error.response?.status === 403) {
+        alert('Access denied. Please log in as an admin.');
+        navigate('/login');
+      } else if (error.response?.status === 401) {
+        alert('Session expired. Please log in again.');
+        navigate('/login');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
-
+  
   const handleAddCar = async (e) => {
     e.preventDefault();
     const formData = new FormData();
