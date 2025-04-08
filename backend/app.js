@@ -32,6 +32,9 @@ app.use('/rentals',require('./routes/rentalRoutes'))
 
 app.use('/listings',require('./routes/listingRoutes'))
 
+
+app.use('/uploads', express.static('uploads'));
+
 app.get('/',(req,res)=>{
     res.send('Hello World')
 })

@@ -80,36 +80,36 @@ const loginController = async (req, res) => {
 // Get User Profile
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('-password');
-        if (!user) return res.status(404).json({ msg: "User not found" });
-
-        return res.json({
-            name: user.username,
-            email: user.email,
-            role: user.role,
-            phone: user.phone || '',
-            address: user.address || ''
-        });
+      const user = await User.findById(req.user._id).select('-password');
+      if (!user) return res.status(404).json({ msg: "User not found" });
+      return res.json({
+        name: user.username,
+        email: user.email,
+        role: user.role,
+        phone: user.phone || '',
+        address: user.address || '',
+        profilePhoto: user.images || '', // Ensure this matches the field name
+      });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ msg: "Server error" });
+      console.error(error);
+      return res.status(500).json({ msg: "Server error" });
     }
-};
+  };
 
+  
 const updateProfile = async (req, res) => {
     try {
       const { name, email, phone, address } = req.body;
       if (!name || !email) {
         return res.status(400).json({ msg: "Name and email are required" });
       }
+      const updateData = { username: name, email, phone, address };
+      if (req.file) {
+        updateData.images = `/uploads/${req.file.filename}`;
+      }
       const updatedUser = await User.findByIdAndUpdate(
-        req.user._id, // Fixed to match verifyToken
-        {
-          username: name,
-          email,
-          phone,
-          address,
-        },
+        req.user._id,
+        updateData,
         { new: true, runValidators: true }
       ).select('-password');
       if (!updatedUser) {
@@ -121,7 +121,8 @@ const updateProfile = async (req, res) => {
           name: updatedUser.username,
           email: updatedUser.email,
           phone: updatedUser.phone || '',
-          address: updatedUser.address || ''
+          address: updatedUser.address || '',
+          profilePhoto: updatedUser.images || '',
         }
       });
     } catch (error) {
@@ -129,6 +130,30 @@ const updateProfile = async (req, res) => {
       return res.status(500).json({ msg: "Server error" });
     }
   };
+  
+
+  const updateProfilePhoto = async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ msg: "No file uploaded" });
+      }
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        return res.status(404).json({ msg: "User not found" });
+      }
+      const photoPath = `/uploads/${req.file.filename}`;
+      user.images = photoPath;
+      await user.save();
+      res.status(200).json({
+        msg: "Profile photo updated successfully",
+        profilePhoto: photoPath,
+      });
+    } catch (error) {
+      console.error("Error updating profile photo:", error);
+      res.status(500).json({ msg: "Server error" });
+    }
+  };
+
 
 
 // Admin Dashboard
@@ -190,5 +215,6 @@ module.exports = {
     updateProfile,
     adminDashboard,
     userHome,
-    getAllUsers
+    getAllUsers,
+    updateProfilePhoto,
 };

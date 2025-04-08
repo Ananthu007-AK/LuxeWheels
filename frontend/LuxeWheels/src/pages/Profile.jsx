@@ -60,25 +60,30 @@ function Profile() {
       setIsLoading(true);
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
-
-      const response = await axios.get("http://localhost:5000/user/profile", {
+  
+      const response = await axios.get("http://localhost:5000/users/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       const data = response.data;
+      console.log('Fetched profile data:', data);
+      const profilePhotoUrl = data.profilePhoto
+        ? `http://localhost:5000${data.profilePhoto}`
+        : userPlaceholder;
+      console.log('Setting profile photo:', profilePhotoUrl);
       setUserData({
         name: data.name || "",
         email: data.email || "",
         phone: data.phone || "",
         address: data.address || "",
-        profilePhoto: data.profilePhoto || userPlaceholder,
+        profilePhoto: profilePhotoUrl,
       });
       setFormData({
         name: data.name || "",
         email: data.email || "",
         phone: data.phone || "",
         address: data.address || "",
-        profilePhoto: data.profilePhoto || userPlaceholder,
+        profilePhoto: profilePhotoUrl,
       });
     } catch (error) {
       console.error("Error fetching user data:", error.response?.data || error.message);
@@ -127,30 +132,22 @@ function Profile() {
     if (isEditing) {
       try {
         const token = localStorage.getItem("token");
-        console.log('Updating profile with token:', token);
-        console.log('Form data:', {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-        });
+        const formDataToSend = new FormData();
+        formDataToSend.append("name", formData.name);
+        formDataToSend.append("email", formData.email);
+        formDataToSend.append("phone", formData.phone);
+        formDataToSend.append("address", formData.address);
+        if (formData.profilePhoto !== userData.profilePhoto && formData.profilePhoto.startsWith('data:')) {
+          const file = await fetch(formData.profilePhoto).then(r => r.blob());
+          formDataToSend.append("profilePhoto", file, "profile.jpg");
+        }
+  
         const response = await axios.put(
           "http://localhost:5000/users/update",
-          {
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            address: formData.address,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+          formDataToSend,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log('Update response:', response.data);
-        setUserData({ ...formData, profilePhoto: userData.profilePhoto });
+        setUserData({ ...formData, profilePhoto: response.data.user.profilePhoto || formData.profilePhoto });
         alert(response.data.msg);
       } catch (error) {
         console.error("Error updating profile:", error.response?.data || error.message);
@@ -212,31 +209,34 @@ function Profile() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
-
+  
       reader.onload = async (event) => {
         const newProfilePhoto = event.target.result;
+        console.log('Photo preview (base64):', newProfilePhoto);
         setFormData({ ...formData, profilePhoto: newProfilePhoto });
-
+  
         if (!isEditing) {
           try {
             const token = localStorage.getItem("token");
+            console.log('Uploading with token:', token);
             const formDataToSend = new FormData();
             formDataToSend.append("profilePhoto", file);
-
+  
             const response = await axios.post(
-              "http://localhost:5000/user/profile-photo",
+              "http://localhost:5000/users/profile-photo",
               formDataToSend,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
-                  "Content-Type": "multipart/form-data",
                 },
               }
             );
-
+            console.log('Server response:', response.data);
+            const serverPhotoUrl = `http://localhost:5000${response.data.profilePhoto}`; // Full URL
+            console.log('Setting profile photo to:', serverPhotoUrl);
             setUserData({
               ...userData,
-              profilePhoto: response.data.profilePhoto || newProfilePhoto,
+              profilePhoto: serverPhotoUrl || newProfilePhoto,
             });
           } catch (error) {
             console.error("Error updating profile photo:", error.response?.data || error.message);
@@ -244,7 +244,7 @@ function Profile() {
           }
         }
       };
-
+  
       reader.readAsDataURL(file);
     }
   };
