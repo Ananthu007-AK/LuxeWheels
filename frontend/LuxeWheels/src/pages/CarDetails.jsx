@@ -176,11 +176,69 @@ function CarDetails() {
   const handleBookingInputChange = (e) => {
     const { name, value } = e.target;
     setBookingData((prevData) => ({ ...prevData, [name]: value }));
+  
+    const today = new Date().toISOString().split("T")[0];
+    let errors = { ...bookingErrors };
+  
+    if (name === "pickupDate") {
+      if (value < today) {
+        errors.pickupDate = "Pick-up date cannot be in the past.";
+      } else {
+        errors.pickupDate = "";
+      }
+      if (bookingData.returnDate && value >= bookingData.returnDate) {
+        errors.returnDate = "Return date must be after pick-up date.";
+      } else if (bookingData.returnDate) {
+        errors.returnDate = "";
+      }
+    }
+  
+    if (name === "returnDate") {
+      if (value <= bookingData.pickupDate) {
+        errors.returnDate = "Return date must be after pick-up date.";
+      } else {
+        errors.returnDate = "";
+      }
+    }
+  
+    setBookingErrors(errors);
   };
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+  
+    // Get current date (without time for comparison)
+    const today = new Date().toISOString().split("T")[0];
+    const pickupDate = bookingData.pickupDate;
+    const returnDate = bookingData.returnDate;
+  
+    // Validation checks
+    if (!pickupDate || !returnDate) {
+      alert("Please select both pick-up and return dates.");
+      setIsSubmitting(false);
+      return;
+    }
+  
+    if (pickupDate < today) {
+      alert("Pick-up date cannot be in the past. Please select a date starting from today.");
+      setIsSubmitting(false);
+      return;
+    }
+  
+    if (returnDate <= pickupDate) {
+      alert("Return date must be after the pick-up date.");
+      setIsSubmitting(false);
+      return;
+    }
+  
+    // Phone number validation (existing)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(bookingData.phone)) {
+      alert("Please enter a valid 10-digit phone number.");
+      setIsSubmitting(false);
+      return;
+    }
   
     const bookingPayload = {
       carId: car.id,
@@ -193,17 +251,25 @@ function CarDetails() {
       status: "pending",
     };
   
-    console.log("Booking Payload:", bookingPayload); // Log the payload
+    console.log("Booking Payload:", bookingPayload);
   
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.post("http://localhost:5000/rentals", bookingPayload, {
         headers: {
-          Authorization: `Bearer ${token}`, // Ensure the token is included
+          Authorization: `Bearer ${token}`,
         },
       });
       alert(response.data.message || `Rental request submitted for ${car.title}. Awaiting admin approval.`);
-      // Reset form or perform other actions
+      setShowBookingForm(false); // Close form on success
+      setBookingData({
+        name: "",
+        phone: "",
+        email: "",
+        pickupDate: "",
+        returnDate: "",
+        specialRequests: "",
+      }); // Reset form
     } catch (error) {
       console.error("Booking submission error:", error.response?.data || error);
       alert(error.response?.data?.message || "Failed to submit booking.");
@@ -211,6 +277,7 @@ function CarDetails() {
       setIsSubmitting(false);
     }
   };
+
 
   if (isLoading) return <div className="car-details-container">Loading...</div>;
   if (error) return <div className="car-details-container">{error}</div>;
@@ -476,30 +543,32 @@ function CarDetails() {
               </div>
             </div>
             <form onSubmit={handleBookingSubmit} className="booking-detail-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="pickupDate">Pick-up Date</label>
-                  <input
-                    type="date"
-                    id="pickupDate"
-                    name="pickupDate"
-                    value={bookingData.pickupDate}
-                    onChange={handleBookingInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="returnDate">Return Date</label>
-                  <input
-                    type="date"
-                    id="returnDate"
-                    name="returnDate"
-                    value={bookingData.returnDate}
-                    onChange={handleBookingInputChange}
-                    required
-                  />
-                </div>
-              </div>
+            <div className="form-row">
+  <div className="form-group">
+    <label htmlFor="pickupDate">Pick-up Date</label>
+    <input
+      type="date"
+      id="pickupDate"
+      name="pickupDate"
+      value={bookingData.pickupDate}
+      onChange={handleBookingInputChange}
+      min={new Date().toISOString().split("T")[0]} // Restrict to today or future
+      required
+    />
+  </div>
+  <div className="form-group">
+    <label htmlFor="returnDate">Return Date</label>
+    <input
+      type="date"
+      id="returnDate"
+      name="returnDate"
+      value={bookingData.returnDate}
+      onChange={handleBookingInputChange}
+      min={bookingData.pickupDate || new Date().toISOString().split("T")[0]} // After pickup or today
+      required
+    />
+  </div>
+</div>
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="bookingName">Full Name</label>
