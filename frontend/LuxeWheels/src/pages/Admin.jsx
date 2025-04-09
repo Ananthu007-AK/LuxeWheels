@@ -102,8 +102,8 @@ function Admin() {
       await axios.patch(`http://localhost:5000/rentals/${id}/approve`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchRentals(); // Refresh rentals
-      fetchCars(); // Refresh car list to reflect updated status
+      fetchRentals();
+      fetchCars();
     } catch (error) {
       console.error('Error approving rental:', error.response?.data || error.message);
       alert('Failed to approve rental. Please try again.');
@@ -114,11 +114,9 @@ function Admin() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      console.log('Fetching users with token:', token);
       const response = await axios.get('http://localhost:5000/users', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Raw users response:', response.data);
       const mappedUsers = response.data.map(user => ({
         id: user.id,
         name: user.name,
@@ -128,7 +126,6 @@ function Admin() {
         address: user.address || 'N/A',
         status: user.status || 'active',
       }));
-      console.log('Mapped users:', mappedUsers);
       setUsers(mappedUsers);
     } catch (error) {
       console.error('Error fetching users:', {
@@ -147,7 +144,7 @@ function Admin() {
       setIsLoading(false);
     }
   };
-  
+
   const handleAddCar = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -253,8 +250,8 @@ function Admin() {
       await axios.patch(`http://localhost:5000/rentals/${id}/complete`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchRentals(); // Refresh rentals
-      fetchCars(); // Refresh car list to reflect updated status
+      fetchRentals();
+      fetchCars();
     } catch (error) {
       console.error('Error completing rental:', error.response?.data || error.message);
       alert('Failed to complete rental. Please try again.');
@@ -268,6 +265,12 @@ function Admin() {
     setUsers([]);
     alert('You have been logged out');
     navigate('/login');
+  };
+
+  // Helper function to get user name by userId
+  const getUserNameById = (userId) => {
+    const user = users.find(u => u.id === userId);
+    return user ? user.name : 'Unknown User';
   };
 
   const renderContent = () => {
@@ -345,7 +348,6 @@ function Admin() {
           <section className="admin-section-card">
             <h2>Add New Car</h2>
             <form onSubmit={handleAddCar} className="admin-car-form">
-              {/* Form fields remain unchanged */}
               <div className="admin-form-row">
                 <input
                   type="text"
@@ -592,62 +594,64 @@ function Admin() {
             )}
           </section>
         );
-        case 'rentals':
-          return (
-            <section className="admin-section-card">
-              <h2>Active Rentals</h2>
-              {rentals.length === 0 ? (
-                <div className="admin-empty-state">No active rentals.</div>
-              ) : (
-                <table className="admin-data-table">
-                  <thead>
-                    <tr>
-                      <th>Car</th>
-                      <th>Renter</th>
-                      <th>Phone</th>
-                      <th>Start Date</th>
-                      <th>End Date</th>
-                      <th>Status</th>
-                      <th>Action</th>
+      case 'rentals':
+        return (
+          <section className="admin-section-card">
+            <h2>Active Rentals</h2>
+            {rentals.length === 0 ? (
+              <div className="admin-empty-state">No active rentals.</div>
+            ) : (
+              <table className="admin-data-table">
+                <thead>
+                  <tr>
+                    <th>Car</th>
+                    <th>Renter</th>
+                    <th>User</th> {/* New column for signed-in user */}
+                    <th>Phone</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rentals.map(rental => (
+                    <tr key={rental._id}>
+                      <td>{rental.carId ? `${rental.carId.make} ${rental.carId.model}` : 'Unknown Car'}</td>
+                      <td>{rental.name}</td>
+                      <td>{rental.userId ? getUserNameById(rental.userId) : 'Unknown User'}</td> {/* Display user name */}
+                      <td>{rental.phone}</td>
+                      <td>{new Date(rental.pickupDate).toLocaleDateString()}</td>
+                      <td>{new Date(rental.returnDate).toLocaleDateString()}</td>
+                      <td>
+                        <span className={`admin-rental-status admin-status-${rental.status}`}>
+                          {rental.status}
+                        </span>
+                      </td>
+                      <td>
+                        {rental.status === 'pending' ? (
+                          <button
+                            onClick={() => approveRental(rental._id)}
+                            className="admin-action-btn admin-approve-btn"
+                          >
+                            Approve
+                          </button>
+                        ) : rental.status === 'approved' ? (
+                          <button
+                            onClick={() => completeRental(rental._id)}
+                            className="admin-action-btn"
+                          >
+                            Mark Completed
+                          </button>
+                        ) : null}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {rentals.map(rental => (
-                      <tr key={rental._id}>
-                        <td>{rental.carId ? `${rental.carId.make} ${rental.carId.model}` : 'Unknown Car'}</td>
-                        <td>{rental.name}</td>
-                        <td>{rental.phone}</td>
-                        <td>{new Date(rental.pickupDate).toLocaleDateString()}</td>
-                        <td>{new Date(rental.returnDate).toLocaleDateString()}</td>
-                        <td>
-                          <span className={`admin-rental-status admin-status-${rental.status}`}>
-                            {rental.status}
-                          </span>
-                        </td>
-                        <td>
-                          {rental.status === 'pending' ? (
-                            <button
-                              onClick={() => approveRental(rental._id)}
-                              className="admin-action-btn admin-approve-btn"
-                            >
-                              Approve
-                            </button>
-                          ) : rental.status === 'approved' ? (
-                            <button
-                              onClick={() => completeRental(rental._id)}
-                              className="admin-action-btn"
-                            >
-                              Mark Completed
-                            </button>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </section>
-          );
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </section>
+        );
       case 'users':
         return (
           <section className="admin-section-card">
