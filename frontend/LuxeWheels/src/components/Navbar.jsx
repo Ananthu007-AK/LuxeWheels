@@ -11,6 +11,14 @@ const Navbar = ({ user, setUser }) => {
     navigate("/");
   };
 
+  const handleProfileClick = (e) => {
+    if (!user) {
+      e.preventDefault(); // Prevent default Link behavior
+      navigate("/login"); // Redirect to login page if user is not logged in
+    }
+    // If user is logged in, the Link will proceed to "/profile" normally
+  };
+
   return (
     <nav className="navbar">
       <a href="/" className="logo">
@@ -21,7 +29,7 @@ const Navbar = ({ user, setUser }) => {
         <Link to="/rent">Rent</Link>
         <Link to="/sell">Sell</Link>
         <ScrollLink to="about" smooth={true} duration={500}>About us</ScrollLink>
-        <Link to="/profile">Profile</Link>
+        <Link to="/profile" onClick={handleProfileClick}>Profile</Link>
 
         {user ? (
           <button onClick={handleLogout} className="logout-btn">Logout</button>

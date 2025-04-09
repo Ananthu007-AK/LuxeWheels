@@ -604,6 +604,7 @@ function Admin() {
                     <tr>
                       <th>Car</th>
                       <th>Renter</th>
+                      <th>Phone</th>
                       <th>Start Date</th>
                       <th>End Date</th>
                       <th>Status</th>
@@ -615,6 +616,7 @@ function Admin() {
                       <tr key={rental._id}>
                         <td>{rental.carId ? `${rental.carId.make} ${rental.carId.model}` : 'Unknown Car'}</td>
                         <td>{rental.name}</td>
+                        <td>{rental.phone}</td>
                         <td>{new Date(rental.pickupDate).toLocaleDateString()}</td>
                         <td>{new Date(rental.returnDate).toLocaleDateString()}</td>
                         <td>
