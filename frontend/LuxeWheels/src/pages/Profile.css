@@ -351,3 +351,33 @@
   .profile-detail-value.pending { color: orange; }
   .profile-detail-value.approved { color: green; }
   .profile-detail-value.rejected { color: red; }
+
+
+
+
+  /* Profile.css */
+.profile-rental-action-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.profile-rental-action-btn:hover {
+  background-color: #0056b3;
+}
+
+.profile-detail-value.pending-completion {
+  color: #ff9800; /* Orange for pending-completion status */
+}
+
+.profile-detail-value.approved {
+  color: #28a745; /* Green for approved status */
+}
+
+.profile-detail-value.completed {
+  color: #6c757d; /* Gray for completed status */
+}

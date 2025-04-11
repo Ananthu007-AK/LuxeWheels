@@ -125,33 +125,36 @@ function CarDetails() {
   const handleEnquirySubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+  
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(enquiryData.phone)) {
-      alert("Please enter a valid 10-digit phone number.");
+      alert('Please enter a valid 10-digit phone number.');
       setIsSubmitting(false);
       return;
     }
-
+  
     const enquiryPayload = {
       user: enquiryData.name,
       car: car.title,
       message: enquiryData.message,
       email: enquiryData.email,
       phone: enquiryData.phone,
-      date: new Date().toISOString().split("T")[0],
+      date: new Date().toISOString().split('T')[0],
     };
-
+  
     try {
-      const response = await axios.post("http://localhost:5000/enquiries", enquiryPayload);
-      alert(response.data.message || "Your enquiry has been submitted successfully!");
+      const response = await axios.post('http://localhost:5000/enquiries', enquiryPayload);
+      alert(
+        response.data.message ||
+          'Your enquiry has been submitted successfully! Our team has been notified and will contact you soon.'
+      );
     } catch (error) {
-      console.error("Error submitting enquiry:", error);
-      alert(error.response?.data?.message || "Failed to submit enquiry.");
+      console.error('Error submitting enquiry:', error);
+      alert(error.response?.data?.message || 'Failed to submit enquiry.');
     } finally {
       setIsSubmitting(false);
       setShowEnquiryForm(false);
-      setEnquiryData({ name: "", email: "", phone: "", message: "" });
+      setEnquiryData({ name: '', email: '', phone: '', message: '' });
     }
   };
 
@@ -208,34 +211,31 @@ function CarDetails() {
     e.preventDefault();
     setIsSubmitting(true);
   
-    // Get current date (without time for comparison)
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split('T')[0];
     const pickupDate = bookingData.pickupDate;
     const returnDate = bookingData.returnDate;
   
-    // Validation checks
     if (!pickupDate || !returnDate) {
-      alert("Please select both pick-up and return dates.");
+      alert('Please select both pick-up and return dates.');
       setIsSubmitting(false);
       return;
     }
   
     if (pickupDate < today) {
-      alert("Pick-up date cannot be in the past. Please select a date starting from today.");
+      alert('Pick-up date cannot be in the past. Please select a date starting from today.');
       setIsSubmitting(false);
       return;
     }
   
     if (returnDate <= pickupDate) {
-      alert("Return date must be after the pick-up date.");
+      alert('Return date must be after the pick-up date.');
       setIsSubmitting(false);
       return;
     }
   
-    // Phone number validation (existing)
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(bookingData.phone)) {
-      alert("Please enter a valid 10-digit phone number.");
+      alert('Please enter a valid 10-digit phone number.');
       setIsSubmitting(false);
       return;
     }
@@ -247,32 +247,35 @@ function CarDetails() {
       email: bookingData.email,
       pickupDate: bookingData.pickupDate,
       returnDate: bookingData.returnDate,
-      specialRequests: bookingData.specialRequests || "",
-      status: "pending",
+      specialRequests: bookingData.specialRequests || '',
+      status: 'pending',
     };
   
-    console.log("Booking Payload:", bookingPayload);
+    console.log('Booking Payload:', bookingPayload);
   
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post("http://localhost:5000/rentals", bookingPayload, {
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:5000/rentals', bookingPayload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      alert(response.data.message || `Rental request submitted for ${car.title}. Awaiting admin approval.`);
-      setShowBookingForm(false); // Close form on success
+      alert(
+        response.data.message ||
+          `Rental request submitted for ${car.title}. Our team has been notified and will confirm your booking soon.`
+      );
+      setShowBookingForm(false);
       setBookingData({
-        name: "",
-        phone: "",
-        email: "",
-        pickupDate: "",
-        returnDate: "",
-        specialRequests: "",
-      }); // Reset form
+        name: '',
+        phone: '',
+        email: '',
+        pickupDate: '',
+        returnDate: '',
+        specialRequests: '',
+      });
     } catch (error) {
-      console.error("Booking submission error:", error.response?.data || error);
-      alert(error.response?.data?.message || "Failed to submit booking.");
+      console.error('Booking submission error:', error.response?.data || error);
+      alert(error.response?.data?.message || 'Failed to submit booking.');
     } finally {
       setIsSubmitting(false);
     }
