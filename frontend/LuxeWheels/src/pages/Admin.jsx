@@ -25,6 +25,7 @@ function Admin() {
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingCar, setEditingCar] = useState(null); // New state for editing car
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -273,73 +274,310 @@ function Admin() {
     return user ? user.name : 'Unknown User';
   };
 
+
+  const handleEditCar = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    Object.keys(editingCar).forEach(key => {
+      if (key === 'images') {
+        editingCar.images.forEach(image => {
+          if (image instanceof File) {
+            formData.append('images', image);
+          }
+        });
+      } else if (key !== '_id') {
+        formData.append(key, editingCar[key]);
+      }
+    });
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`http://localhost:5000/cars/${editingCar._id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCars(cars.map(car => car._id === editingCar._id ? response.data.car : car));
+      setEditingCar(null);
+      fetchCars();
+    } catch (error) {
+      console.error('Error updating car:', error.response?.data || error.message);
+      alert('Failed to update car. Please try again.');
+    }
+  };
+
+  const handleDeleteCar = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this car?')) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/cars/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCars(cars.filter(car => car._id !== id));
+    } catch (error) {
+      console.error('Error deleting car:', error.response?.data || error.message);
+      alert('Failed to delete car. Please try again.');
+    }
+  };
+
+  const handleEditImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    const maxImages = 5;
+    if (files.length + editingCar.images.length > maxImages) {
+      alert(`You can upload a maximum of ${maxImages} images`);
+      return;
+    }
+    const validImages = files.filter(file => {
+      if (!file.type.startsWith('image/')) {
+        alert(`"${file.name}" is not an image file`);
+        return false;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`"${file.name}" exceeds 5MB limit`);
+        return false;
+      }
+      return true;
+    });
+    setEditingCar({ ...editingCar, images: [...editingCar.images, ...validImages] });
+  };
+
+  const removeEditImage = (index) => {
+    const updatedImages = editingCar.images.filter((_, i) => i !== index);
+    setEditingCar({ ...editingCar, images: updatedImages });
+  };
+
+  const startEditing = (car) => {
+    setEditingCar({
+      ...car,
+      images: car.images || [],
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingCar(null);
+  };
+
+
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
         return (
           <section className="admin-section-card">
             <h2>Car Listings</h2>
-            {isLoading ? (
-              <div className="admin-loading">Loading cars...</div>
-            ) : cars.length === 0 ? (
-              <div className="admin-empty-state">No cars available. Add new cars to get started.</div>
-            ) : (
-              <table className="admin-data-table">
-                <thead>
-                  <tr>
-                    <th>Images</th>
-                    <th>Make</th>
-                    <th>Model</th>
-                    <th>Year</th>
-                    <th>Price</th>
-                    <th>Rent</th>
-                    <th>Trans</th>
-                    <th>KM</th>
-                    <th>Colour</th>
-                    <th>Owners</th>
-                    <th>Fuel</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cars.map(car => (
-                    <tr key={car._id}>
-                      <td>
-                        {car.images && car.images.length > 0 ? (
-                          <div className="admin-image-preview-container">
-                            {car.images.map((img, index) => (
+            {editingCar ? (
+              <div className="admin-edit-form">
+                <h3>Edit Car</h3>
+                <form onSubmit={handleEditCar} className="admin-car-form">
+                  <div className="admin-form-row">
+                    <input
+                      type="text"
+                      placeholder="Make"
+                      value={editingCar.make}
+                      onChange={(e) => setEditingCar({ ...editingCar, make: e.target.value })}
+                      className="admin-input-field"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Model"
+                      value={editingCar.model}
+                      onChange={(e) => setEditingCar({ ...editingCar, model: e.target.value })}
+                      className="admin-input-field"
+                      required
+                    />
+                    <input
+                      type="number"
+                      placeholder="Year"
+                      value={editingCar.year}
+                      onChange={(e) => setEditingCar({ ...editingCar, year: e.target.value })}
+                      className="admin-input-field"
+                      required
+                    />
+                  </div>
+                  <div className="admin-form-row">
+                    <input
+                      type="number"
+                      placeholder="Price"
+                      value={editingCar.price}
+                      onChange={(e) => setEditingCar({ ...editingCar, price: e.target.value })}
+                      className="admin-input-field"
+                      required
+                    />
+                    <input
+                      type="number"
+                      placeholder="Rent"
+                      value={editingCar.rent}
+                      onChange={(e) => setEditingCar({ ...editingCar, rent: e.target.value })}
+                      className="admin-input-field"
+                      required
+                    />
+                    <select
+                      value={editingCar.transmission}
+                      onChange={(e) => setEditingCar({ ...editingCar, transmission: e.target.value })}
+                      className="admin-input-field"
+                    >
+                      <option value="automatic">Automatic</option>
+                      <option value="manual">Manual</option>
+                    </select>
+                    <input
+                      type="number"
+                      placeholder="KM Driven"
+                      value={editingCar.kmDriven}
+                      onChange={(e) => setEditingCar({ ...editingCar, kmDriven: e.target.value })}
+                      className="admin-input-field"
+                      required
+                    />
+                  </div>
+                  <div className="admin-form-row">
+                    <input
+                      type="text"
+                      placeholder="Colour"
+                      value={editingCar.colour}
+                      onChange={(e) => setEditingCar({ ...editingCar, colour: e.target.value })}
+                      className="admin-input-field"
+                      required
+                    />
+                    <input
+                      type="number"
+                      placeholder="No. of Owners"
+                      value={editingCar.owners}
+                      onChange={(e) => setEditingCar({ ...editingCar, owners: e.target.value })}
+                      className="admin-input-field"
+                      required
+                    />
+                    <select
+                      value={editingCar.fuelType}
+                      onChange={(e) => setEditingCar({ ...editingCar, fuelType: e.target.value })}
+                      className="admin-input-field"
+                    >
+                      <option value="petrol">Petrol</option>
+                      <option value="diesel">Diesel</option>
+                      <option value="electric">Electric</option>
+                      <option value="hybrid">Hybrid</option>
+                    </select>
+                  </div>
+                  <div className="admin-form-row">
+                    <div className="admin-image-upload-container">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleEditImageChange}
+                        className="admin-input-field"
+                      />
+                      <small>Max 5 images (5MB each)</small>
+                      {editingCar.images.length > 0 && (
+                        <div className="admin-image-preview">
+                          {editingCar.images.map((img, index) => (
+                            <div key={index} className="admin-image-preview-item">
                               <img
-                                key={index}
-                                src={`http://localhost:5000${img}`}
-                                alt={`${car.make} ${car.model} ${index + 1}`}
+                                src={img instanceof File ? URL.createObjectURL(img) : `http://localhost:5000${img}`}
+                                alt={`Preview ${index + 1}`}
                                 className="admin-car-image"
-                                onError={(e) => console.log('Image load error:', e.target.src)}
                               />
-                            ))}
-                          </div>
-                        ) : (
-                          'No Images'
-                        )}
-                      </td>
-                      <td>{car.make}</td>
-                      <td>{car.model}</td>
-                      <td>{car.year}</td>
-                      <td>${Number(car.price).toLocaleString()}</td>
-                      <td>${Number(car.rent).toLocaleString()}</td>
-                      <td>{car.transmission}</td>
-                      <td>{Number(car.kmDriven).toLocaleString()}</td>
-                      <td>{car.colour}</td>
-                      <td>{car.owners}</td>
-                      <td>{car.fuelType}</td>
-                      <td>
-                        <span className={`admin-rental-status admin-status-${car.status}`}>
-                          {car.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                              <button
+                                type="button"
+                                onClick={() => removeEditImage(index)}
+                                className="admin-remove-image-btn"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="admin-form-row">
+                    <button type="submit" className="admin-submit-btn">Update Car</button>
+                    <button type="button" onClick={cancelEditing} className="admin-cancel-btn">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <>
+                {isLoading ? (
+                  <div className="admin-loading">Loading cars...</div>
+                ) : cars.length === 0 ? (
+                  <div className="admin-empty-state">No cars available. Add new cars to get started.</div>
+                ) : (
+                  <table className="admin-data-table">
+                    <thead>
+                      <tr>
+                        <th>Images</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th>Year</th>
+                        <th>Price</th>
+                        <th>Rent</th>
+                        <th>Trans</th>
+                        <th>KM</th>
+                        <th>Colour</th>
+                        <th>Owners</th>
+                        <th>Fuel</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cars.map(car => (
+                        <tr key={car._id}>
+                          <td>
+                            {car.images && car.images.length > 0 ? (
+                              <div className="admin-image-preview-container">
+                                {car.images.map((img, index) => (
+                                  <img
+                                    key={index}
+                                    src={`http://localhost:5000${img}`}
+                                    alt={`${car.make} ${car.model} ${index + 1}`}
+                                    className="admin-car-image"
+                                    onError={(e) => console.log('Image load error:', e.target.src)}
+                                  />
+                                ))}
+                              </div>
+                            ) : (
+                              'No Images'
+                            )}
+                          </td>
+                          <td>{car.make}</td>
+                          <td>{car.model}</td>
+                          <td>{car.year}</td>
+                          <td>${Number(car.price).toLocaleString()}</td>
+                          <td>${Number(car.rent).toLocaleString()}</td>
+                          <td>{car.transmission}</td>
+                          <td>{Number(car.kmDriven).toLocaleString()}</td>
+                          <td>{car.colour}</td>
+                          <td>{car.owners}</td>
+                          <td>{car.fuelType}</td>
+                          <td>
+                            <span className={`admin-rental-status admin-status-${car.status}`}>
+                              {car.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="admin-action-buttons">
+                              <button
+                                onClick={() => startEditing(car)}
+                                className="admin-action-btn admin-edit-btn"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCar(car._id)}
+                                className="admin-action-btn admin-delete-btn"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </>
             )}
           </section>
         );
