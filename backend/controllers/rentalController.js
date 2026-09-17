@@ -1,6 +1,5 @@
-// controllers/rentalController.js
-const Rental = require('../model/Rental');
-const Car = require('../model/Car');
+const Rental = require('../models/Rental');
+const Car = require('../models/Car');
 const { sendEmail } = require('../utils/email');
 
 exports.createRental = async (req, res) => {
@@ -17,7 +16,7 @@ exports.createRental = async (req, res) => {
 
     const rental = new Rental({
       carId,
-      userId: req.user._id,
+      userId: req.user?._id || req.user?.userId,
       name,
       phone,
       email,
@@ -29,48 +28,54 @@ exports.createRental = async (req, res) => {
     await rental.save();
 
     const adminEmail = process.env.ADMIN_EMAIL;
-    const subject = `New Rental Request for ${car.make} ${car.model}`;
-    const text = `
-      New Rental Request Received:
-      Name: ${name}
-      Car: ${car.make} ${car.model} (ID: ${carId})
-      Phone: ${phone}
-      Email: ${email}
-      Pick-up Date: ${pickupDate}
-      Return Date: ${returnDate}
-      Special Requests: ${specialRequests || 'None'}
-      Status: ${rental.status}
-    `;
-    const html = `
-      <h2>New Rental Request Received</h2>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Car:</strong> ${car.make} ${car.model} (ID: ${carId})</p>
-      <p><strong>Phone:</strong> ${phone}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Pick-up Date:</strong> ${pickupDate}</p>
-      <p><strong>Return Date:</strong> ${returnDate}</p>
-      <p><strong>Special Requests:</strong> ${specialRequests || 'None'}</p>
-      <p><strong>Status:</strong> ${rental.status}</p>
-    `;
+    if (adminEmail) {
+      const subject = `New Rental Request for ${car.make} ${car.model}`;
+      const text = `
+        New Rental Request Received:
+        Name: ${name}
+        Car: ${car.make} ${car.model} (ID: ${carId})
+        Phone: ${phone}
+        Email: ${email}
+        Pick-up Date: ${pickupDate}
+        Return Date: ${returnDate}
+        Special Requests: ${specialRequests || 'None'}
+        Status: ${rental.status}
+      `;
+      const html = `
+        <h2>New Rental Request Received</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Car:</strong> ${car.make} ${car.model} (ID: ${carId})</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Pick-up Date:</strong> ${pickupDate}</p>
+        <p><strong>Return Date:</strong> ${returnDate}</p>
+        <p><strong>Special Requests:</strong> ${specialRequests || 'None'}</p>
+        <p><strong>Status:</strong> ${rental.status}</p>
+      `;
 
-    await sendEmail({
-      to: adminEmail,
-      subject,
-      text,
-      html,
-    });
+      try {
+        await sendEmail({
+          to: adminEmail,
+          subject,
+          text,
+          html,
+        });
+      } catch (err) {
+        console.warn('Could not send notification email:', err.message);
+      }
+    }
 
     res.status(201).json({ message: 'Rental request submitted successfully', rental });
   } catch (error) {
     console.error('Error creating rental:', error);
-    res.status(500).json({ message: 'Server error while creating rental' });
+    res.status(500).json({ message: 'Server error while creating rental', error: error.message });
   }
 };
 
 exports.getAllRentals = async (req, res) => {
   try {
     const rentals = await Rental.find()
-      .populate('carId', 'make model')
+      .populate('carId', 'make model images price rent')
       .sort({ createdAt: -1 });
     res.status(200).json(rentals);
   } catch (error) {
@@ -81,16 +86,17 @@ exports.getAllRentals = async (req, res) => {
 
 exports.getUserRentals = async (req, res) => {
   try {
-    const rentals = await Rental.find({ userId: req.user._id })
-      .populate('carId', 'make model')
+    const userId = req.user?._id || req.user?.userId;
+    const rentals = await Rental.find({ userId })
+      .populate('carId', 'make model images price rent')
       .sort({ createdAt: -1 });
 
     const formattedRentals = rentals.map((rental) => ({
       _id: rental._id,
-      carId: {
+      carId: rental.carId ? {
         _id: rental.carId._id,
         title: `${rental.carId.make} ${rental.carId.model}`,
-      },
+      } : { _id: null, title: 'Unknown Car' },
       pickupDate: rental.pickupDate,
       returnDate: rental.returnDate,
       status: rental.status,
@@ -108,58 +114,19 @@ exports.approveRental = async (req, res) => {
   try {
     const rentalId = req.params.id;
 
-    // Find and update the rental
     const rental = await Rental.findByIdAndUpdate(
       rentalId,
-      { status: 'approved' },
+      { status: 'confirmed' },
       { new: true }
-    ).populate('carId', 'make model'); // Populate car details for email
+    ).populate('carId', 'make model');
 
     if (!rental) {
       return res.status(404).json({ success: false, message: 'Rental not found' });
     }
 
-    // Update car status to rented
-    await Car.findByIdAndUpdate(rental.carId._id, { status: 'rented' });
-
-    // Send email to user
-    const userEmail = rental.email; // User's email from rental record
-    const subject = `Your Rental Request for ${rental.carId.make} ${rental.carId.model} Has Been Approved`;
-    const text = `
-      Dear ${rental.name},
-
-      We are pleased to inform you that your rental request has been approved!
-
-      Rental Details:
-      Car: ${rental.carId.make} ${rental.carId.model}
-      Pick-up Date: ${rental.pickupDate}
-      Return Date: ${rental.returnDate}
-      Special Requests: ${rental.specialRequests || 'None'}
-
-      Please contact us at ${process.env.ADMIN_EMAIL} if you have any questions or need to make changes.
-
-      Enjoy your ride!
-      The Luxewheels Team
-    `;
-    const html = `
-      <h2>Rental Request Approved</h2>
-      <p>Dear ${rental.name},</p>
-      <p>We are pleased to inform you that your rental request has been approved!</p>
-      <h3>Rental Details:</h3>
-      <p><strong>Car:</strong> ${rental.carId.make} ${rental.carId.model}</p>
-      <p><strong>Pick-up Date:</strong> ${rental.pickupDate}</p>
-      <p><strong>Return Date:</strong> ${rental.returnDate}</p>
-      <p><strong>Special Requests:</strong> ${rental.specialRequests || 'None'}</p>
-      <p>Please contact us at <a href="mailto:${process.env.ADMIN_EMAIL}">${process.env.ADMIN_EMAIL}</a> if you have any questions or need to make changes.</p>
-      <p>Enjoy your ride!<br>The Luxewheels Team</p>
-    `;
-
-    await sendEmail({
-      to: userEmail,
-      subject,
-      text,
-      html,
-    });
+    if (rental.carId) {
+      await Car.findByIdAndUpdate(rental.carId._id, { status: 'rented' });
+    }
 
     res.status(200).json({ success: true, rental });
   } catch (error) {
@@ -189,6 +156,31 @@ exports.completeRental = async (req, res) => {
     res.status(200).json({ success: true, rental });
   } catch (error) {
     console.error('Error completing rental:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+exports.rejectRental = async (req, res) => {
+  try {
+    const rentalId = req.params.id;
+
+    const rental = await Rental.findByIdAndUpdate(
+      rentalId,
+      { status: 'rejected' },
+      { new: true }
+    );
+
+    if (!rental) {
+      return res.status(404).json({ success: false, message: 'Rental not found' });
+    }
+
+    if (rental.carId) {
+      await Car.findByIdAndUpdate(rental.carId, { status: 'available' });
+    }
+
+    res.status(200).json({ success: true, rental });
+  } catch (error) {
+    console.error('Error rejecting rental:', error);
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };

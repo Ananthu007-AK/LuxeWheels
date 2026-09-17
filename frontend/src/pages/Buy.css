@@ -1,0 +1,599 @@
+.buy-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 20px 40px;
+}
+
+.buy-page-hero {
+  text-align: center;
+  margin: 0 0 35px;
+  padding: 45px 25px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+.buy-page-title {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.buy-page-subtitle {
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+  font-weight: 400;
+  color: #444444;
+}
+
+.buy-page-search-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.buy-page-search {
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.buy-page-section-title {
+  text-align: center;
+  font-size: 2.2rem;
+  margin: 40px 0 30px;
+  position: relative;
+}
+
+.buy-page-section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background: #000;
+  margin: 15px auto;
+}
+
+.buy-page-cars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.buy-page-car-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: white;
+}
+
+.buy-page-car-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.buy-page-car-image-container {
+  height: 220px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-floating-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.card-action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  color: #222;
+  font-size: 0.95rem;
+}
+
+.card-action-btn:hover {
+  transform: scale(1.1);
+  background: #000;
+  color: #fff;
+}
+
+.card-action-btn.wishlist-active {
+  color: #e11d48;
+  background: #fff;
+}
+
+.card-action-btn.compare-active {
+  background: #000;
+  color: #fff;
+}
+
+.buy-page-car-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.buy-page-car-card:hover .buy-page-car-image {
+  transform: scale(1.1);
+}
+
+.buy-page-car-details {
+  padding: 20px;
+}
+
+.buy-page-car-title {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.buy-page-car-price {
+  font-size: 1.3rem;
+  color: #e63946;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.buy-page-car-specs {
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.buy-page-car-specs p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.buy-page-car-specs span {
+  font-weight: 600;
+  color: #222;
+}
+
+.buy-page-buy-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buy-page-buy-button:hover {
+  background-color: #333;
+}
+
+.buy-page-no-results {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Enquiry Form Styles */
+.buy-page-enquiry-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.buy-page-enquiry-form-container {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.buy-page-close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+}
+
+.buy-page-enquiry-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.buy-page-form-group {
+  margin-bottom: 20px;
+}
+
+.buy-page-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.buy-page-form-input,
+.buy-page-form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.buy-page-form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.buy-page-submit-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buy-page-submit-button:hover {
+  background-color: #333;
+}
+
+.buy-page-footer {
+  margin-top: 60px;
+  padding: 20px;
+  text-align: center;
+  background-color: #111;
+  color: white;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .buy-page-cars-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .buy-page-title {
+    font-size: 2.2rem;
+  }
+
+  .buy-page-section-title {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .buy-page-cars-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .buy-page-car-image-container {
+    height: 180px;
+  }
+
+  .buy-page-hero {
+    padding: 30px 15px;
+  }
+
+  .buy-page-enquiry-form-container {
+    padding: 20px;
+  }
+}
+
+.buy-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.buy-page-hero {
+  text-align: center;
+  margin: 40px 0;
+  padding: 40px 20px;
+  background: linear-gradient(to left, #565656, #a09d9d);
+  color: white;
+  border-radius: 10px;
+}
+
+.buy-page-title {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.buy-page-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  font-weight: 300;
+}
+
+.buy-page-search-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.buy-page-search {
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.buy-page-section-title {
+  text-align: center;
+  font-size: 2.2rem;
+  margin: 40px 0 30px;
+  position: relative;
+}
+
+.buy-page-section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background: #000;
+  margin: 15px auto;
+}
+
+.buy-page-cars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.buy-page-car-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: white;
+}
+
+.buy-page-car-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.buy-page-car-image-container {
+  height: 220px;
+  overflow: hidden;
+  position: relative;
+}
+
+.buy-page-car-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.buy-page-car-card:hover .buy-page-car-image {
+  transform: scale(1.1);
+}
+
+.buy-page-car-details {
+  padding: 20px;
+}
+
+.buy-page-car-title {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.buy-page-car-price {
+  font-size: 1.3rem;
+  color: #e63946;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.buy-page-car-specs {
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.buy-page-car-specs p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.buy-page-car-specs span {
+  font-weight: 600;
+  color: #222;
+}
+
+.buy-page-buy-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buy-page-buy-button:hover {
+  background-color: #333;
+}
+
+.buy-page-no-results {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Enquiry Form Styles */
+.buy-page-enquiry-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.buy-page-enquiry-form-container {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.buy-page-close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+}
+
+.buy-page-enquiry-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.buy-page-form-group {
+  margin-bottom: 20px;
+}
+
+.buy-page-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.buy-page-form-input,
+.buy-page-form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.buy-page-form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.buy-page-submit-button {
+  width: 100%;
+  padding: 14px;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buy-page-submit-button:hover {
+  background-color: #333;
+}
+
+.buy-page-footer {
+  margin-top: 60px;
+  padding: 20px;
+  text-align: center;
+  background-color: #111;
+  color: white;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .buy-page-cars-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .buy-page-title {
+    font-size: 2.2rem;
+  }
+
+  .buy-page-section-title {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .buy-page-cars-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .buy-page-car-image-container {
+    height: 180px;
+  }
+
+  .buy-page-hero {
+    padding: 30px 15px;
+  }
+
+  .buy-page-enquiry-form-container {
+    padding: 20px;
+  }
+}

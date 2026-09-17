@@ -1,56 +1,45 @@
-const express=require('express')
-const app=express()
-require('dotenv').config()
-app.use(express.json())
-const db=require('./model/db')
-const userRoutes = require('./routes/user')
-const cors=require('cors')
-db.connect()
+const express = require('express');
+const app = express();
+require('dotenv').config();
+const cors = require('cors');
+const path = require('path');
+const db = require('./config/db');
 
-const authRoutes = require('./routes/authRoutes')
+// Connect Database
+db.connect();
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const PORT=process.env.PORT || 3003
+// Routes
+const userRoutes = require('./routes/userRoutes');
+const authRoutes = require('./routes/authRoutes');
+const carRoutes = require('./routes/carRoutes');
+const rentalRoutes = require('./routes/rentalRoutes');
+const listingRoutes = require('./routes/listingRoutes');
+const enquiryRoutes = require('./routes/enquiryRoutes');
 
+app.use('/user', userRoutes);
+app.use('/users', userRoutes); // Alias for backwards compatibility
+app.use('/auth', authRoutes);
+app.use('/cars', carRoutes);
+app.use('/rentals', rentalRoutes);
+app.use('/listings', listingRoutes);
+app.use('/enquiries', enquiryRoutes);
 
-app.use(cors())
-
-app.use('/uploads', express.static('uploads'));
-
-app.use('/enquiries', require('./routes/enquiries'));
-
-
-app.use('/user',userRoutes)
-
-app.use('/users',require('./routes/user'))
-
-app.use('/users',authRoutes)
-
-app.use('/cars',require('./routes/CarRoutes'))
-
-app.use('/rentals',require('./routes/rentalRoutes'))
-
-app.use('/listings',require('./routes/listingRoutes'))
-
-
-app.use('/uploads', express.static('uploads'));
-
-app.get('/',(req,res)=>{
-    res.send('Hello World')
-})
-
-
-app.post('/user/register', (req, res) => {
-    res.json({ message: "User registered successfully!" });
+// Health Check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', service: 'LuxeWheels API', timestamp: new Date().toISOString() });
 });
 
+app.get('/', (req, res) => {
+  res.send('LuxeWheels API is running');
+});
 
-app.post('/',(req,res)=>{
-    res.json(req.body)
-})
+const PORT = process.env.PORT || 9000;
 
-
-app.listen(PORT,()=>{
-    console.log(`Server is running on ${PORT}`);
-    
-})
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

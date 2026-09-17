@@ -1,0 +1,34 @@
+:root {
+  /* Color Palette - Modern Luxury */
+  --bg-dark: #090c12;
+  --bg-card: rgba(18, 22, 34, 0.85);
+  --bg-card-hover: rgba(26, 32, 48, 0.95);
+  --bg-surface: #121622;
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-gold: rgba(212, 175, 55, 0.3);
+
+  /* Brand Accents */
+  --gold-primary: #d4af37;
+  --gold-light: #f3e5ab;
+  --gold-hover: #b89628;
+  --gold-glow: rgba(212, 175, 55, 0.25);
+  --accent-red: #ef4444;
+  --accent-green: #10b981;
+
+  /* Typography */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --font-display: 'Cinzel', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Shadows */
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  --shadow-gold: 0 4px 20px -2px rgba(212, 175, 55, 0.35);
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}

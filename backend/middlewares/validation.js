@@ -23,16 +23,11 @@ const loginvalidation=[
 
 const registervalidation=[
     body('email').isEmail().withMessage('Enter a valid email address'),
-    body('password').isLength({ min: 8 })
-        .withMessage('Password must be at least 8 characters long')
-        .matches(/[0-9]/)
-        .withMessage('Password must contain at least one number')
-        .matches(/[!@#$%^&*]/)
-        .withMessage('Password must contain at least one special character'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(401).json({ errors: errors.array() });
+            return res.status(400).json({ errors: errors.array(), msg: errors.array()[0].msg });
         }
         next();
     }

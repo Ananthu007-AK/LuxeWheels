@@ -1,0 +1,22 @@
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const listingController = require('../controllers/listingController');
+
+const storage = multer.diskStorage({
+  destination: './uploads/',
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
+
+router.post('/', upload.array('images', 5), listingController.createListing);
+router.get('/pending', listingController.getPendingListings);
+router.patch('/:id/approve', listingController.approveListing);
+router.patch('/:id/reject', listingController.rejectListing);
+router.get('/cars', listingController.getCars);
+
+module.exports = router;

@@ -1,6 +1,5 @@
-// controllers/listingController.js
-const Listing = require('../model/Listing');
-const Car = require('../model/Car');
+const Listing = require('../models/Listing');
+const Car = require('../models/Car');
 
 const listingController = {
   createListing: async (req, res) => {
@@ -17,7 +16,7 @@ const listingController = {
 
   getPendingListings: async (req, res) => {
     try {
-      const listings = await Listing.find({ status: 'pending' });
+      const listings = await Listing.find({ status: 'pending' }).sort({ createdAt: -1 });
       res.json(listings);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -26,39 +25,31 @@ const listingController = {
 
   approveListing: async (req, res) => {
     try {
-      console.log('Approving listing with ID:', req.params.id);
       const listing = await Listing.findById(req.params.id);
       if (!listing) {
-        console.log('Listing not found for ID:', req.params.id);
         return res.status(404).json({ success: false, error: 'Listing not found' });
       }
 
-      console.log('Found listing:', listing);
-
-      // Create a new car from the listing
       const carData = {
         make: listing.make,
         model: listing.model,
         year: listing.year,
         price: listing.price,
+        rent: Math.round(listing.price * 0.005) || 25000,
         status: 'available',
         images: listing.images,
-        transmission: listing.transmission,
-        kmDriven: listing.mileage,
-        colour: listing.color,
-        owners: 1, // Default value
-        fuelType: 'petrol' // Default value
+        transmission: listing.transmission || 'automatic',
+        kmDriven: listing.mileage || 0,
+        colour: listing.color || 'Black',
+        owners: 1,
+        fuelType: 'petrol'
       };
 
-      console.log('Creating car with data:', carData);
       const car = new Car(carData);
       await car.save();
-      console.log('Car saved:', car);
 
-      // Update listing status
       listing.status = 'approved';
       await listing.save();
-      console.log('Listing updated:', listing);
 
       res.json({ success: true, listing, car });
     } catch (error) {
@@ -85,7 +76,7 @@ const listingController = {
 
   getCars: async (req, res) => {
     try {
-      const cars = await Car.find();
+      const cars = await Car.find().sort({ createdAt: -1 });
       res.json(cars);
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });

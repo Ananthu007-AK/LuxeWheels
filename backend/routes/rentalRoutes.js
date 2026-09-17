@@ -9,5 +9,6 @@ router.get('/', authMiddleware, rentalController.getAllRentals); // Get all rent
 router.get('/user', authMiddleware, rentalController.getUserRentals); // Get user's rentals (user-only)
 router.patch('/:id/complete', authMiddleware, rentalController.completeRental); // Complete a rental (admin or user)
 router.patch('/:id/approve', authMiddleware, rentalController.approveRental); // Approve a rental (admin-only)
+router.patch('/:id/reject', authMiddleware, rentalController.rejectRental); // Reject a rental (admin-only)
 
 module.exports = router;
